@@ -47,12 +47,12 @@ new data
 """
 
 folder = os.path.dirname(__file__)
-filename_to_load = f"{folder}/../data/task_simulation.mat"
+# filename_to_load = f"{folder}/../data/task_simulation.mat"
 # filename_to_load = f"{folder}/../data/simulation_params_comb_maneuver.mat"
 cache_folder = os.path.join(folder,'..', 'cache')
-loaded_data = scipy.io.loadmat(filename_to_load)
+# loaded_data = scipy.io.loadmat(filename_to_load)
 
-temp = loaded_data["xtrue"].T
+# temp = loaded_data["xtrue"].T
 
 
 
