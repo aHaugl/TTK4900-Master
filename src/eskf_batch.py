@@ -32,7 +32,7 @@ from quaternion import (
 # from state import NominalIndex, ErrorIndex
 from utils import cross_product_matrix
 
-from timer import*
+# from timer import*
 
 # %% indices
 POS_IDX = CatSlice(start=0, stop=3)
@@ -45,7 +45,7 @@ ERR_ACC_BIAS_IDX = CatSlice(start=9, stop=12)
 ERR_GYRO_BIAS_IDX = CatSlice(start=12, stop=15)
 
 @dataclass
-class ESKF:
+class ESKF_batch:
     sigma_acc: float #acc_std
     sigma_gyro: float #rate_std
 
@@ -616,8 +616,6 @@ class ESKF:
         R_GNSS: np.ndarray,
         R_beacons: np.ndarray,
         beacon_location: np.ndarray,
-        use_batch_pseudoranges,
-        use_iterative_pseudoranges,
         lever_arm: np.ndarray = np.zeros(3),
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Updates the state and covariance from a GNSS position measurement
@@ -657,55 +655,18 @@ class ESKF:
             3,
         ), f"ESKF.update_GNSS: lever_arm shape incorrect {lever_arm.shape}"
 
-        
-        if (use_batch_pseudoranges):
-            
-            delta_x, P_update = self.batch_pseudorange(                                                x_nominal,
-                                                    z_GNSS_position,
-                                                    P,
-                                                    R_GNSS,
-                                                    beacon_location,
-                                                    R_beacons
-                                                    ) 
-        elif(use_iterative_pseudoranges):
-            delta_x, P_update = self.iterative_pseudorange_v2(                                                x_nominal,
-                                            z_GNSS_position,
-                                            P,
-                                            R_GNSS,
-                                            beacon_location,
-                                            R_beacons
-                                            ) 
-        
+
+        delta_x, P_update = self.batch_pseudorange(
+                                                x_nominal,
+                                                z_GNSS_position,
+                                                P,
+                                                R_GNSS,
+                                                beacon_location,
+                                                R_beacons
+                                                ) 
+        # Error state injection
         x_injected, P_injected = self.inject(x_nominal, delta_x, P_update)
         
-        
-
-        
-        # delta_x_i, P_update_i = self.iterative_pseudorange(x_nominal,
-        #                                         z_GNSS_position,
-        #                                         P,
-        #                                         R_GNSS,
-        #                                         beacon_location,
-        #                                         R_beacons
-        #                                         ) 
-        # print(delta_x - delta_x_i)
-        # print("delta_x iterative : ", delta_x_i, delta_x_i.shape)
-        # delta_x_i = delta_x_i.reshape((-1,))
-        # print("delta_x iterative : ", delta_x_i, delta_x_i.shape)
-        
-        # print("delta_x bactch: ", delta_x, delta_x.shape)
-        # print("delta_x iterative : ", delta_x_i, delta_x_i.shape)
-        # print("P_update bactch: ", P_update, P_update.shape)
-        # print("P_update iterative: ", P_update_i, P_update_i.shape)
-        
-        
-        
-
-        # error state injection
-
-        # x_injected, P_injected = self.inject(x_nominal, delta_x_i, P_update_i)
-        # print("x_injected:", x_injected[POS_IDX])
-
         assert x_injected.shape == (
             16,
         ), f"ESKF.update_GNSS: x_injected shape incorrect {x_injected.shape}"
@@ -775,15 +736,10 @@ class ESKF:
         # print(H)
         S = H @ P @ H.T + R_beacons[:num_beacons, :num_beacons] #R_GNSS
         # print(S.shape)
-
-        
         W = P @ H.T @ la.inv(S)
         # print(W,W.shape)
-
         delta_x = W @ v
-        
         Jo = I - W @ H  # for Joseph form
-        
         # Update the error covariance
 
         P_update = Jo @ P @ Jo.T + W @ R_beacons[:num_beacons, :num_beacons] @ W.T
@@ -791,372 +747,70 @@ class ESKF:
         return delta_x, P_update
     
     
-    def iterative_pseudorange_v2(self,
-                      x_nominal: np.ndarray,
-                      # x_true: np.ndarray,
-                      z_GNSS_position: np.ndarray,
-                      P:np.ndarray,
-                      # S:np.ndarray, 
-                      R_GNSS:np.ndarray,
-                      b_loc: np.ndarray,
-                      R_beacons: np.ndarray) -> np.ndarray:
+    @classmethod 
+    def delta_x(cls,
+                x_nominal: np.ndarray,
+                x_true: np.ndarray
+                ) -> np.ndarray:
+        """ Calculates the error state between x_nominal and x_true
         
+
+        Parameters
+        ----------
+        x_nominal : np.ndarray
+            Nominal estimated state, (16,)
+        x_true : np.ndarray
+            The true state vector, (16,)
+            
+        Raises
+        -------
+        AssertionError: If any input or output is wrong shape.
+        
+        Returns
+        -------
+        d_x: 
+            Error state state between x_nominal and x_true
+
         """
-        Generate pseudoranges and design matrix H whenever a GNSS measurement
-        is recieved (1Hz).
-        
-        Is used in the update step where the filter incorporates the predicted values and 
-        the information from the measurements to improve the estimated position errors.
-        
-        This is done in the functions Update_GNSS_position
-        """
-        #tic()
-        
-        I = np.eye(*P.shape)
-        
-        num_beacons = len(b_loc)
-        # num_beacons = 1
-        num_beacons_at_the_time = 1
-        est_ranges = np.zeros(num_beacons)
-        measured_ranges = np.zeros(num_beacons)
-        delta_P = np.zeros(num_beacons)
-        
-        pos_est = x_nominal[POS_IDX]  
-        pos_meas = z_GNSS_position
-        
-        delta_x = np.zeros((15,))
-        #ranges/LOS vectors
-        for i in range(num_beacons):
-            est_ranges[i] = np.array(
-                [la.norm(-pos_est + b_loc[i])]
-                )
-            measured_ranges[i] = np.array(
-                [la.norm(-pos_meas + b_loc[i])]
-                )
-                        
-        #Pseudorange measurement residual
-        v = measured_ranges - est_ranges
-        # print("delta_P: ", delta_P)
-        
-        #Geometry matrix consisting of normalized LOS-vectors
-        for i in range(num_beacons):
-            # print(i)
-            H = np.zeros((num_beacons_at_the_time, 15))
-            for k in range(num_beacons_at_the_time):
-                  for j in range(3):
-                      # print(j)
-                      # print("Range for this beacon: ", ranges[k])
-                     
-                      H[k,j] = (b_loc[k+i,j] - pos_est[j])#/ranges[k]
-                  # print("H[k]: ", H[k])
-                  H[k] = -(H[k])/est_ranges[k+i]
-    
-            # print(H)
-            # print(P)
-            # print(R_beacons)
-            #Innovation covariance: 1x1
-            S = H @ P @ H.T + R_beacons[i, i] #R_GNSS
-            # print(S)
-            
-            #Kalman gain 15x1
-            W = P @ H.T/S # @ la.inv(S)
-            
-    
-            delta_x = (W * v[i]).T #Adding up the error states
-            # print(delta_x, delta_x.shape)
-            
-            # for Joseph form
-            Jo = I - W @ H  
-            # Update the error covariance
-            P = Jo @ P @ Jo.T + W @  W.T * R_beacons[i, i]
-            
-            
-    
-        P_update = P
-    
-        return delta_x, P_update
-    
-         
-    # def iterative_pseudorange(self,
-    #                   x_nominal: np.ndarray,
-    #                   # x_true: np.ndarray,
-    #                   z_GNSS_position: np.ndarray,
-    #                   P:np.ndarray,
-    #                   # S:np.ndarray, 
-    #                   R_GNSS:np.ndarray,
-    #                   b_loc: np.ndarray,
-    #                   R_beacons: np.ndarray) -> np.ndarray:
-        
-    #     """This is made to work with 3 beacons at the time
-    #     Generate pseudoranges and design matrix H whenever a GNSS measurement
-    #     is recieved (1Hz).
-        
-    #     x_nominal: Current state prediction, size((15,1))
-    #     P: Predicted covariance at this time step, size((15,15))
-        
-    #     """
-    #     #tic()
-    #     assert x_nominal.shape == (
-    #         16,
-    #     ), f"ESKF.update_GNSS: x_nominal shape incorrect {x_nominal.shape}"
-    #     assert P.shape == (
-    #         15, 15), f"ESKF.update_GNSS: P shape incorrect {P.shape}"
-    #     assert z_GNSS_position.shape == (
-    #         3,
-    #     ), f"ESKF.update_GNSS: z_GNSS_position shape incorrect {z_GNSS_position.shape}"
-        
-    #     I = np.eye(*P.shape)
-        
-    #     # num_beacons = len(b_loc)
-    #     num_beacons = 3
-    #     est_ranges = np.zeros(num_beacons)
-    #     measured_ranges = np.zeros(num_beacons)
-    #     delta_P = np.zeros(num_beacons)
-        
-    #     pos_est = x_nominal[POS_IDX]  
-    #     pos_meas = z_GNSS_position
-
-    #     # %% Iterativ 3 og 3 beacons         #ranges/LOS vectors
-    #     for i in range(num_beacons):
-    #         est_ranges[i] = np.array(
-    #             [la.norm(-pos_est + b_loc[i])]
-    #             )
-    #         measured_ranges[i] = np.array(
-    #             [la.norm(-pos_meas + b_loc[i])]
-    #             )
-                        
-    #     #Pseudorange measurement residual
-    #     v = measured_ranges - est_ranges
-    #     # Geometry matrix consisting of normalized LOS-vectors for each beacon?
-    #     delta_x = np.zeros((15,))
-    #     H_all = np.zeros((num_beacons,15))
-    #     W_all = np.zeros((15,num_beacons))
-    #     H = np.zeros((3,15))
-    #     b_sel = 0 #To indicate which beacons are in use
-        
-    #     for i in range(int(num_beacons / 3)):#Divide loop into parts of 3: Not handling numbeacons not divisible by 3
-    #         # print("i: ", i)
-    #         for k in range(b_sel, b_sel + 3): #Iterating over 3 and 3 beacons
-    #             # print("k: ",k)
-    #             # print("Currently using beacon number: ", k)
-    #             # for i in range(3): 
-    #             for j in range(3):
-    #                 H[k-b_sel,j] = (b_loc[k-b_sel,j] - pos_est[j])
-    #                 # print((b_loc[k,j] - pos_est[j]))
-                
-    #             H[k-b_sel] = -H[k-b_sel]/est_ranges[k]
-    #             H_all[b_sel:b_sel+3,:] = H
-            
-    #         # print("H[k]: ", H, H.shape)
-    #         # print("Accumulated H: ", H_all, H.shape)
-            
-    #         S = H @ P @ H.T + R_GNSS # R_beacons[a:a+3, a:a+3]
-    #         W = P @ H.T @ la.inv(S)
-            
-    #         # W_all[:,b_sel:b_sel+3] = W
-    #         # print("Accumulated gain matrix: ", W_all, W_all.shape)
-            
-    #         # print("S: ", S, S.shape)
-    #         # print("W: ", W, W.shape)
-    #         # print("a: ", a)
-    #         print("v[a:a+3]: ", v[b_sel:b_sel+3], v[b_sel:b_sel+3].shape)
-            
-    #         delta_x =  W @ v[b_sel:b_sel+3]
-    #         # print("Accumulated delta_x: " ,delta_x, delta_x.shape)
-            
-    #         #Må gjøre en korreksjon av covariansen for den neste batchen blir gjennomført
-    #         #Dette blir ustabilt
-    #         # Jo = I - W @ H
-    #         # P = Jo @ P @ Jo.T + W @ R_beacons[a:a+3, a:a+3] @ W.T
-            
-    #         if not ((num_beacons - b_sel) % 3):
-    #             print("More beacons available, selecting three next")
-    #             b_sel += 3
-    #         elif ((b_sel + 3) > num_beacons):
-    #             print("There are less than 3 beacons available. Using the final 3 beacons")
-    #             b_sel = num_beacons - 3 
-    #         print("b_sel: ", b_sel)
-            
-    #     # P_update = P
-    #     #Dette funker, men er ekvivalent med å kun gjøre korreksjon med 3 beacons
-    #     Jo = I - W @ H  # for Joseph form
-        
-    #     # Update the error covariance
-
-    #     P_update = Jo @ P @ Jo.T + W @ R_GNSS @ W.T #R_beacons[:3,:3]
-
-    #     # Jo = I - W_all @ H_all
-    #     # P_update = Jo @ P @ Jo.T + W_all @ R_beacons[:num_beacons, :num_beacons] @ W_all.T
-                
-    #     return delta_x, P_update
-
-    # def iterative_pseudorange(self,
-    #                   x_nominal: np.ndarray,
-    #                   # x_true: np.ndarray,
-    #                   z_GNSS_position: np.ndarray,
-    #                   P:np.ndarray,
-    #                   # S:np.ndarray, 
-    #                   R_GNSS:np.ndarray,
-    #                   b_loc: np.ndarray,
-    #                   R_beacons: np.ndarray) -> np.ndarray:
-        
-    #     """
-    #     Generate pseudoranges and design matrix H whenever a GNSS measurement
-    #     is recieved (1Hz).
-        
-    #     Is used in the update step where the filter incorporates the predicted values and 
-    #     the information from the measurements to improve the estimated position errors.
-        
-    #     This is done in the functions Update_GNSS_position
-    #     """
-    #     #tic()
-        
-    #     I = np.eye(*P.shape)
-        
-    #     num_beacons = len(b_loc)
-    #     est_ranges = np.zeros(num_beacons)
-    #     measured_ranges = np.zeros(num_beacons)
-    #     delta_P = np.zeros(num_beacons)
-        
-    #     pos_est = x_nominal[POS_IDX]  
-    #     pos_meas = z_GNSS_position
-
-
-    #     # %% Iterativ 
-    #     #ranges/LOS vectors
-    #     for i in range(num_beacons):
-    #         est_ranges[i] = np.array(
-    #             [la.norm(-pos_est + b_loc[i])]
-    #             )
-    #         measured_ranges[i] = np.array(
-    #             [la.norm(-pos_meas + b_loc[i])]
-    #             )
-                        
-    #     #Pseudorange measurement residual
-    #     # v = np.array((15,1))
-    #     v = measured_ranges - est_ranges
-    #     # v = np.reshape(v, ((15,1)))
-    #     # print("delta_P: ", delta_P)
-        
-    #     # Geometry matrix consisting of normalized LOS-vectors for each beacon?
-
-    #     P_update = np.zeros((15,15))
-    #     Jo = np.zeros((15,15))
-    #     R = np.zeros((15,15))
-    #     delta_x = np.zeros((15,1))
-    #     W1 = np.zeros((15,15))
-    #     H1 = np.zeros((15,15))
-    #     for k in range(num_beacons):
-    #         # print("k: ",k)
-    #         H = np.zeros((1,15))
-    #         for j in range(3):
-    #               H[0,j] = (b_loc[k,j] - pos_est[j])#/ranges[k]
-    #         H = -H/est_ranges[k]
-    #         H1[k,:] = H
-    #         print("H1: ", H1, H1.shape)
-            
-    #         # print(H[k] @ P @ H[k].T)
-    #         #S = scalar            
-            
-    #         # S = np.dot(H,P,H.T)
-    #         # print(P)
-    #         S = H @ P @ H.T #+ R_beacons[k,k] #Dette blir ein skalar. Skal det være ein vektor? 
-    #         # print("P",P)
-    #         # W = P @ H.T / S# + R_beacons[k,k]
-    #         W = P* H / S# + R_beacons[k,k]
-    #         # W1[:,k] = W.T
-    #         # print("W",W)
-            
-    #         print(delta_x)
-    #         delta_x = delta_x + (W * v[k])
-    #         print(delta_x,delta_x.shape)
-            
-    #     I = np.eye(*P.shape)
-    #     Jo = I - W1 @ H1  # for Joseph form
-    #     P = Jo @ P @ Jo.T + W1 @ R_beacons @ W1.T
-    #     P_update = P_update + P
-            
-    #     delta_x = np.reshape(delta_x,((15,)))
-        
-        
-    #     return delta_x, P_update
-        # return x_injected, P_injected
-
-             
-              # I = np.eye(*P.shape)
-              # Jo = I - W @ H  # for Joseph form
-        
-              # # Update the error covariance
-              # P = Jo @ P @ Jo.T + W @ R_GNSS @ W.            
-        # P_update = P
-        # Gjøre korreksjon fra linje 570
-        # x_est = x_est + delta_x
-
-    
-    # @classmethod 
-    # def delta_x(cls,
-    #             x_nominal: np.ndarray,
-    #             x_true: np.ndarray
-    #             ) -> np.ndarray:
-    #     """ Calculates the error state between x_nominal and x_true
-        
-
-    #     Parameters
-    #     ----------
-    #     x_nominal : np.ndarray
-    #         Nominal estimated state, (16,)
-    #     x_true : np.ndarray
-    #         The true state vector, (16,)
-            
-    #     Raises
-    #     -------
-    #     AssertionError: If any input or output is wrong shape.
-        
-    #     Returns
-    #     -------
-    #     d_x: 
-    #         Error state state between x_nominal and x_true
-
-    #     """
-    #     assert x_nominal.shape == (
-    #         16,
-    #         ), f"ESKF.delta_x: x_nominal shape incorrect {x_nominal.shape}"
-    #     assert x_true.shape == (
-    #         16,
-    #         ), f"ESKF.delta_x: x_nominal shape incorrect {x_true.shape}"
+        assert x_nominal.shape == (
+            16,
+            ), f"ESKF.delta_x: x_nominal shape incorrect {x_nominal.shape}"
+        assert x_true.shape == (
+            16,
+            ), f"ESKF.delta_x: x_nominal shape incorrect {x_true.shape}"
         
        
-    #     delta_position = x_true[POS_IDX] - x_nominal[POS_IDX]
+        delta_position = x_true[POS_IDX] - x_nominal[POS_IDX]
             
-    #     delta_velocity = x_true[VEL_IDX] - x_nominal[VEL_IDX]
+        delta_velocity = x_true[VEL_IDX] - x_nominal[VEL_IDX]
         
-    #     # Conjugate of quaternion
-    #     quat_conj = x_nominal[ATT_IDX]
-    #     quat_conj[1:] *= -1
+        # Conjugate of quaternion
+        quat_conj = x_nominal[ATT_IDX]
+        quat_conj[1:] *= -1
         
-    #     delta_quat = quaternion_product(quat_conj,
-    #                                     x_true[ATT_IDX])
-    #     delta_theta = 2* delta_quat[1:]
+        delta_quat = quaternion_product(quat_conj,
+                                        x_true[ATT_IDX])
+        delta_theta = 2* delta_quat[1:]
         
-    #     delta_bias = (
-    #         x_true[ACC_BIAS_IDX + GYRO_BIAS_IDX] -  x_nominal[ACC_BIAS_IDX + GYRO_BIAS_IDX]
-    #         )
+        delta_bias = (
+            x_true[ACC_BIAS_IDX + GYRO_BIAS_IDX] -  x_nominal[ACC_BIAS_IDX + GYRO_BIAS_IDX]
+            )
         
         
-    #     d_x = np.concatenate(
-    #         (
-    #         delta_position,
-    #         delta_velocity,
-    #         delta_theta,
-    #         delta_bias
-    #         )
-    #     )
-    #     # print("d_x is estimated as: ", d_x)
+        d_x = np.concatenate(
+            (
+            delta_position,
+            delta_velocity,
+            delta_theta,
+            delta_bias
+            )
+        )
+        # print("d_x is estimated as: ", d_x)
 
-    #     assert d_x.shape == (
-    #         15,), f"ESKF.delta_x: d_x shape incorrect {d_x.shape}"
+        assert d_x.shape == (
+            15,), f"ESKF.delta_x: d_x shape incorrect {d_x.shape}"
 
-    #     return d_x
+        return d_x
 
 # %% Backup of working code
     # def iterative_pseudorange_v2(self,

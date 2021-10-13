@@ -34,8 +34,10 @@ from quaternion import *
 from cat_slice import CatSlice
 # from eskf import ESKF
 # from eskf import ESKF
-from batcheskf import batch_ESKF
-from eskf_runner import run_batch_eskf
+
+from eskf_batch import ESKF_batch
+from eskf_iterative import ESKF_iterative
+from eskf_runner import run_batch_eskf, run_iterative_eskf
 from plotter import * #plot_error_v_sigma, plot_pos, plot_vel, plot_angle, plot_estimate, plot_3Dpath, plot_path, state_error_plots, plot_NEES, plot_NIS
 # from timer import * 
 
@@ -200,92 +202,23 @@ Running the simulation
 """
 beacon_location: np.ndarray = loaded_data["beacon_location"]
 
-use_batch_pseudoranges: bool = True
-use_iterative_pseudoranges: bool = False
+use_batch_pseudoranges: bool = False
+use_iterative_pseudoranges: bool = True
 
 num_beacons = len(beacon_location)
 num_sims = 1
 
 t_batch = np.zeros(num_sims)
+elapsed_iterative = np.zeros(num_sims)
+
+t_iterative = np.zeros(num_sims)
 elapsed_batch = np.zeros(num_sims)
+
 # %%
 print("Number of beacons used: ", num_beacons)
 print("Number of simulations ran through", num_sims)
 print("Simulation duration (seconds): ", N*dt) 
 
-if (use_batch_pseudoranges):
-    print("Using batch pseudoranges")
-elif(use_iterative_pseudoranges):
-    print("Using iterative pseudoranges")
-
-for i in range(num_sims):  
-    # timeit.timeit()
-    
-    t_batch[i] = time.time()
-    
-    (x_pred,
-    x_est,
-    P_est,
-    GNSSk,
-    ) = run_batch_eskf (N, loaded_data,
-                        eskf_parameters,
-                        x_pred_init, P_pred_init, p_std, 
-                        num_beacons,
-                        offset =0.0, 
-                        use_GNSSaccuracy=False, doGNSS=True,
-                        debug=False  )
-          
-    elapsed_batch[i] = time.time() - t_batch[i] 
-    
-print("Ellapsed time: ", elapsed_batch)
-
-average_time_batch = np.average(elapsed_batch)
-print("Average time elapsed: ", average_time_batch, "seconds")
-
-
-# # %% 
-# use_batch_pseudoranges: bool = False
-# use_iterative_pseudoranges: bool = True
-
-# t_iterative = np.zeros(num_sims)
-# elapsed_iterative = np.zeros(num_sims)
-
-# print("Number of beacons used: ", num_beacons)
-# print("Number of simulations ran through", num_sims)
-# print("Simulation duration (seconds): ", N*dt) 
-
-# if (use_batch_pseudoranges):
-#     print("Using batch pseudoranges")
-# elif(use_iterative_pseudoranges):
-#     print("Using iterative pseudoranges")
-
-# for i in range(num_sims):  
-#     # timeit.timeit()
-    
-#     t_iterative[i] = time.time()
-#     (x_pred,
-#     x_est,
-#     P_est,
-#     GNSSk,
-#     # toc
-#     ) = run_eskf (N, loaded_data,
-#                        eskf_parameters,
-#                        x_pred_init, P_pred_init, p_std, 
-#                        num_beacons,
-#                        use_batch_pseudoranges,
-#                        use_iterative_pseudoranges,
-#                        offset =0.0, 
-#                        use_GNSSaccuracy=False, doGNSS=True,
-#                        debug=False  )
-          
-#     elapsed_iterative[i] = time.time() - t_iterative[i] 
-    
-# print("Ellapsed time: ", elapsed_iterative)
-
-# average_time_iterative = np.average(elapsed_iterative)
-
-print("Average time batch elapsed: ", average_time_batch, "seconds")
-# print("Average time iterative elapsed: ", average_time_iterative, "seconds")
 # %% Plots and stuff                           
 
 # plt.close("all")
@@ -298,6 +231,86 @@ z_acc_vector = loaded_data["z_acc"].T
 acc_t = loaded_data["acc_t"].T
 omega_t = loaded_data["omega_t"].T
 z_gyro_vector = loaded_data["z_gyro"].T
+
+# %%
+if (use_batch_pseudoranges):
+    print("Using batch pseudoranges")
+
+
+    for i in range(num_sims):  
+        # timeit.timeit()
+        
+        t_batch[i] = time.time()
+        
+        (x_pred,
+        x_est,
+        P_est,
+        GNSSk,
+        ) = run_batch_eskf (
+                            N, loaded_data,
+                            eskf_parameters,
+                            x_pred_init, P_pred_init, p_std, 
+                            num_beacons,
+                            offset =0.0, 
+                            use_GNSSaccuracy=False, doGNSS=True,
+                            debug=False
+                            )
+
+        
+        elapsed_batch[i] = time.time() - t_batch[i] 
+    
+    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+
+    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+
+
+    print("Ellapsed time for batch: ", elapsed_batch)
+    average_time_batch = np.average(elapsed_batch)
+    print("Average time for batch elapsed: ", average_time_batch, "seconds")
+
+if (use_iterative_pseudoranges):
+    print("Using iterative pseudoranges")
+    for i in range(num_sims):  
+        # timeit.timeit()
+        t_iterative[i] = time.time()
+        
+        (x_pred,
+        x_est,
+        P_est,
+        GNSSk,
+        ) = run_iterative_eskf (
+                            N, loaded_data,
+                            eskf_parameters,
+                            x_pred_init, P_pred_init, p_std, 
+                            num_beacons,
+                            offset =0.0, 
+                            use_GNSSaccuracy=False, doGNSS=True,
+                            debug=False
+                            )
+            
+        elapsed_iterative[i] = time.time() - t_iterative[i] 
+# # %%         
+    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+
+    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+
+    print("Ellapsed time for iterative: ", elapsed_iterative)
+
+    average_time_batch = np.average(elapsed_iterative)
+    print("Average time elapsed for iterative: ", average_time_batch, "seconds")
+
+# %% Plots and stuff                           
+
+# # plt.close("all")
+# t = np.linspace(0,dt * (N-1), N)
+# # plot_path(t, N, pos_t, pos_t)
+# tGNSS = loaded_data["timeGNSS"].T
+# z_GNSS = loaded_data["z_GNSS"].T
+
+# z_acc_vector = loaded_data["z_acc"].T
+# acc_t = loaded_data["acc_t"].T
+# omega_t = loaded_data["omega_t"].T
+# z_gyro_vector = loaded_data["z_gyro"].T
 
 
 # %% Estimation plots
@@ -312,10 +325,10 @@ z_gyro_vector = loaded_data["z_gyro"].T
 # # 
 # # plot_estimate(t, N, x_est)
 
-plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-# # %%
-plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-# # %%
+# plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+# # # %%
+# plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+# # # %%
 
 # state_error_plots(t, N, x_est, x_true, delta_x)
 
