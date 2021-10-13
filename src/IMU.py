@@ -41,8 +41,6 @@ def z_acc(
     acc_noise_b = np.array([np.random.normal(0, 0.001),
                     np.random.normal(0, 0.001),
                     np.random.normal(0, 0.001)])
-    acc_noise_b
-
     
     # R = rot_mat(euler_angles) #Can also be performed with quat to rotation
     # R = quaternion_to_rotation_matrix(quaternions)
@@ -65,9 +63,9 @@ def z_gyro(
 
     Parameters
     ----------
-     omega_t: True angular velocity
-     omega_bt: gyro bias
-     omega_n: gyro noise
+     omega_t_b: True angular velocity in body
+     omega_bt_b: gyro bias in body
+     omega_n_b: gyro noise in body
      
     Returns
     -------
