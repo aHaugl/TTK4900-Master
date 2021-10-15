@@ -35,9 +35,12 @@ from cat_slice import CatSlice
 # from eskf import ESKF
 # from eskf import ESKF
 
+from utils import UDU_factorization
+
 from eskf_batch import ESKF_batch
 from eskf_iterative import ESKF_iterative
-from eskf_runner import run_batch_eskf, run_iterative_eskf
+from eskf_batch_UDU import ESKF_batch_UDU
+from eskf_runner import run_batch_eskf, run_iterative_eskf, run_batch_eskf_UDU
 from plotter import * #plot_error_v_sigma, plot_pos, plot_vel, plot_angle, plot_estimate, plot_3Dpath, plot_path, state_error_plots, plot_NEES, plot_NIS
 # from timer import * 
 
