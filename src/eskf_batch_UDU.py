@@ -610,6 +610,11 @@ class ESKF_batch_UDU:
 
     def update_GNSS_position(
         self,
+        rtol:float,
+        atol:float,
+        Use_UDU:bool,
+        Use_QR:bool,
+        Use_LU:bool,
         x_nominal: np.ndarray,
         P: np.ndarray,
         z_GNSS_position: np.ndarray,
@@ -657,6 +662,11 @@ class ESKF_batch_UDU:
 
 
         delta_x, P_update = self.batch_pseudorange(
+                                                rtol,
+                                                atol,
+                                                Use_UDU,
+                                                Use_QR,
+                                                Use_LU,
                                                 x_nominal,
                                                 z_GNSS_position,
                                                 P,
@@ -678,14 +688,19 @@ class ESKF_batch_UDU:
         return x_injected, P_injected
   
     def batch_pseudorange(self,
-                      x_nominal: np.ndarray,
-                      # x_true: np.ndarray,
-                      z_GNSS_position: np.ndarray,
-                      P:np.ndarray,
-                      # S:np.ndarray, 
-                      R_GNSS:np.ndarray,
-                      b_loc: np.ndarray,
-                      R_beacons: np.ndarray) -> np.ndarray:
+                        rtol,
+                        atol,
+                        Use_UDU,
+                        Use_QR,
+                        Use_LU,
+                        x_nominal: np.ndarray,
+                        # x_true: np.ndarray,
+                        z_GNSS_position: np.ndarray,
+                        P:np.ndarray,
+                        # S:np.ndarray, 
+                        R_GNSS:np.ndarray,
+                        b_loc: np.ndarray,
+                        R_beacons: np.ndarray) -> np.ndarray:
         
         """
         Generate pseudoranges and design matrix H whenever a GNSS measurement

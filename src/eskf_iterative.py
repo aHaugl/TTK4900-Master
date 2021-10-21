@@ -612,6 +612,7 @@ class ESKF_iterative:
 
     def update_GNSS_position(
         self,
+        
         x_nominal: np.ndarray,
         P: np.ndarray,
         z_GNSS_position: np.ndarray,

@@ -39,8 +39,7 @@ from utils import UDU_factorization
 
 from eskf_batch import ESKF_batch
 from eskf_iterative import ESKF_iterative
-from eskf_batch_UDU import ESKF_batch_UDU
-from eskf_runner import run_batch_eskf, run_iterative_eskf, run_batch_eskf_UDU
+from eskf_runner import run_batch_eskf, run_iterative_eskf
 from plotter import * #plot_error_v_sigma, plot_pos, plot_vel, plot_angle, plot_estimate, plot_3Dpath, plot_path, state_error_plots, plot_NEES, plot_NIS
 # from timer import * 
 
@@ -84,7 +83,17 @@ else:
     
 beacon_location = loaded_data["beacon_location"]
 
+tGNSS = loaded_data["timeGNSS"].T
+z_GNSS = loaded_data["z_GNSS"].T
+
+z_acc_vector = loaded_data["z_acc"].T
+acc_t = loaded_data["acc_t"].T
+omega_t = loaded_data["omega_t"].T
+z_gyro_vector = loaded_data["z_gyro"].T
+
 dt = np.mean(np.diff(timeIMU))
+
+
 
 # %% indices and initialization
 POS_IDX = CatSlice(start=0, stop=3)
@@ -193,11 +202,16 @@ N: int = int(100/dt)
 # N: int = len(timeIMU)
 offset = 0
 doGNSS: bool = True
+rtol = 1e-05
+atol = 1e-08
+
+# %% Plots and stuff                           
+
+# plt.close("all")
+t = np.linspace(0,dt * (N-1), N)
+# plot_path(t, N, pos_t, pos_t)
 
 
-# TODO: Set this to False if you want to check that the predictions make sense over reasonable time lenghts
-
-#parameters = eskf_parameters + init_parameters
 
 # %% Run eskf_runner  
 """
@@ -205,43 +219,38 @@ Running the simulation
 """
 beacon_location: np.ndarray = loaded_data["beacon_location"]
 
-use_batch_pseudoranges: bool = False
-use_iterative_pseudoranges: bool = True
+use_batch_pseudoranges: bool = True
+use_iterative_pseudoranges: bool = False
+Use_UDU: bool = False
+Use_QR: bool = False
+Use_LU: bool = False
+
 
 num_beacons = len(beacon_location)
-num_sims = 1
+num_sims = 10
 
 t_batch = np.zeros(num_sims)
-elapsed_iterative = np.zeros(num_sims)
+elapsed_batch = np.zeros(num_sims)
+t_batch_UDU = np.zeros(num_sims)
+elapsed_batch_UDU = np.zeros(num_sims)
+
+
 
 t_iterative = np.zeros(num_sims)
-elapsed_batch = np.zeros(num_sims)
+elapsed_iterative = np.zeros(num_sims)
 
 # %%
 print("Number of beacons used: ", num_beacons)
 print("Number of simulations ran through", num_sims)
 print("Simulation duration (seconds): ", N*dt) 
 
-# %% Plots and stuff                           
-
-# plt.close("all")
-t = np.linspace(0,dt * (N-1), N)
-# plot_path(t, N, pos_t, pos_t)
-tGNSS = loaded_data["timeGNSS"].T
-z_GNSS = loaded_data["z_GNSS"].T
-
-z_acc_vector = loaded_data["z_acc"].T
-acc_t = loaded_data["acc_t"].T
-omega_t = loaded_data["omega_t"].T
-z_gyro_vector = loaded_data["z_gyro"].T
 
 # %%
 if (use_batch_pseudoranges):
-    print("Using batch pseudoranges")
-
-
+    
     for i in range(num_sims):  
         # timeit.timeit()
+        print("Using batch pseudoranges without factorization. Run number: ", i+1)
         
         t_batch[i] = time.time()
         
@@ -251,6 +260,11 @@ if (use_batch_pseudoranges):
         GNSSk,
         ) = run_batch_eskf (
                             N, loaded_data,
+                            rtol,
+                            atol,
+                            Use_UDU,
+                            Use_QR,
+                            Use_LU,
                             eskf_parameters,
                             x_pred_init, P_pred_init, p_std, 
                             num_beacons,
@@ -258,22 +272,18 @@ if (use_batch_pseudoranges):
                             use_GNSSaccuracy=False, doGNSS=True,
                             debug=False
                             )
+        elapsed_batch[i] = time.time() - t_batch[i]
 
-        
-        elapsed_batch[i] = time.time() - t_batch[i] 
-    
+
+
+
+
     plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-
     plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
 
-
-    print("Ellapsed time for batch: ", elapsed_batch)
-    average_time_batch = np.average(elapsed_batch)
-    print("Average time for batch elapsed: ", average_time_batch, "seconds")
-
 if (use_iterative_pseudoranges):
-    print("Using iterative pseudoranges")
-    for i in range(num_sims):  
+    for i in range(num_sims):
+        print("Using iterative pseudoranges without factorization. Run number: ", i+1)  
         # timeit.timeit()
         t_iterative[i] = time.time()
         
@@ -293,14 +303,53 @@ if (use_iterative_pseudoranges):
             
         elapsed_iterative[i] = time.time() - t_iterative[i] 
 # # %%         
-    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+    # plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
 
-    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+    # plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
 
+
+
+
+# %% Using UDU-factorization
+Use_UDU = True
+if (use_batch_pseudoranges):
+    for i in range(num_sims):  
+        # timeit.timeit()
+        print("Using batch pseudoranges with UDU factorization. Run number: ", i+1)
+        t_batch_UDU[i] = time.time()
+        
+        (x_pred,
+        x_est,
+        P_est,
+        GNSSk,
+        ) = run_batch_eskf (
+                            N, loaded_data,
+                            rtol,
+                            atol,
+                            Use_UDU,
+                            Use_QR,
+                            Use_LU,
+                            eskf_parameters,
+                            x_pred_init, P_pred_init, p_std, 
+                            num_beacons,
+                            offset =0.0, 
+                            use_GNSSaccuracy=False, doGNSS=True,
+                            debug=False
+                            )
+        elapsed_batch_UDU[i] = time.time() - t_batch_UDU[i]
+        
+    # %%
+    print("Ellapsed time for batch: ", elapsed_batch)
+    average_time_batch = np.average(elapsed_batch)
+    print("Average time for batch elapsed: ", average_time_batch, "seconds")
+    
     print("Ellapsed time for iterative: ", elapsed_iterative)
-
     average_time_batch = np.average(elapsed_iterative)
     print("Average time elapsed for iterative: ", average_time_batch, "seconds")
+
+    print("Ellapsed time for batch: ", elapsed_batch_UDU)
+    average_time_batch_UDU = np.average(elapsed_batch_UDU)
+    print("Average time for batch elapsed: ", average_time_batch_UDU, "seconds")
 
 # %% Plots and stuff                           
 

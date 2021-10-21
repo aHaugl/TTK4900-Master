@@ -30,7 +30,7 @@ from quaternion import (
 
 
 # from state import NominalIndex, ErrorIndex
-from utils import cross_product_matrix
+from utils import cross_product_matrix, UDU_factorization
 
 # from timer import*
 
@@ -46,6 +46,13 @@ ERR_GYRO_BIAS_IDX = CatSlice(start=12, stop=15)
 
 @dataclass
 class ESKF_batch:
+    # rtol: float
+    # atol: float
+
+    # Use_UDU: bool
+    # Use_QR: bool
+    # Use_LU: bool
+
     sigma_acc: float #acc_std
     sigma_gyro: float #rate_std
 
@@ -57,8 +64,9 @@ class ESKF_batch:
 
     S_a: np.ndarray = np.eye(3)
     S_g: np.ndarray = np.eye(3)
+
     debug: bool = True
-    use_pseudorange: bool = True
+
 
     g: np.ndarray = np.array([0, 0,9.82])
 
@@ -610,6 +618,11 @@ class ESKF_batch:
 
     def update_GNSS_position(
         self,
+        rtol:float,
+        atol:float,
+        Use_UDU:bool,
+        Use_QR:bool,
+        Use_LU:bool,
         x_nominal: np.ndarray,
         P: np.ndarray,
         z_GNSS_position: np.ndarray,
@@ -617,6 +630,7 @@ class ESKF_batch:
         R_beacons: np.ndarray,
         beacon_location: np.ndarray,
         lever_arm: np.ndarray = np.zeros(3),
+
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Updates the state and covariance from a GNSS position measurement
 
@@ -657,12 +671,17 @@ class ESKF_batch:
 
 
         delta_x, P_update = self.batch_pseudorange(
+                                                rtol,
+                                                atol,
                                                 x_nominal,
                                                 z_GNSS_position,
                                                 P,
                                                 R_GNSS,
                                                 beacon_location,
-                                                R_beacons
+                                                R_beacons,
+                                                Use_UDU,
+                                                Use_QR,
+                                                Use_LU
                                                 ) 
         # Error state injection
         x_injected, P_injected = self.inject(x_nominal, delta_x, P_update)
@@ -678,15 +697,22 @@ class ESKF_batch:
         return x_injected, P_injected
   
     def batch_pseudorange(self,
-                      x_nominal: np.ndarray,
-                      # x_true: np.ndarray,
-                      z_GNSS_position: np.ndarray,
-                      P:np.ndarray,
-                      # S:np.ndarray, 
-                      R_GNSS:np.ndarray,
-                      b_loc: np.ndarray,
-                      R_beacons: np.ndarray) -> np.ndarray:
-        
+                    rtol,
+                    atol,
+                    x_nominal: np.ndarray,
+                    # x_true: np.ndarray,
+                    z_GNSS_position: np.ndarray,
+                    P:np.ndarray,
+                    # S:np.ndarray, 
+                    R_GNSS:np.ndarray,
+                    b_loc: np.ndarray,
+                    R_beacons: np.ndarray,
+                    Use_UDU: bool,
+                    Use_QR: bool,
+                    Use_LU: bool
+
+                    ) -> np.ndarray:
+    
         """
         Generate pseudoranges and design matrix H whenever a GNSS measurement
         is recieved (1Hz).
@@ -720,29 +746,53 @@ class ESKF_batch:
                         
         #Pseudorange measurement residual
         v = measured_ranges - est_ranges
-        # print("delta_P: ", delta_P)
-        
+
         #Geometry matrix consisting of normalized LOS-vectors
         H = np.zeros((num_beacons, 15))
         for k in range(num_beacons):
-              for j in range(3):
-                  # print(j)
-                  # print("Range for this beacon: ", ranges[k])
-                 
-                  H[k,j] = (b_loc[k,j] - pos_est[j])#/ranges[k]
-              # print("H[k]: ", H[k])
-              H[k] = -(H[k])/est_ranges[k]
+            for j in range(3):
+                # print(j)
+                # print("Range for this beacon: ", ranges[k])
+                
+                H[k,j] = (b_loc[k,j] - pos_est[j])#/ranges[k]
+            # print("H[k]: ", H[k])
+            # print(H)
+            H[k] = -(H[k])/est_ranges[k]
 
-        # print(H)
-        S = H @ P @ H.T + R_beacons[:num_beacons, :num_beacons] #R_GNSS
-        # print(S.shape)
-        W = P @ H.T @ la.inv(S)
-        # print(W,W.shape)
-        delta_x = W @ v
-        Jo = I - W @ H  # for Joseph form
-        # Update the error covariance
+        if (Use_UDU):
+            # print("Using UDU")
+            U, D = UDU_factorization(P,rtol,atol)
+            
+            S = H @ U @ D @ U.T @ H.T + R_beacons[:num_beacons, :num_beacons] #R_GNSS
+            # print(S.shape)
+            W = U @ D @ U.T @ H.T @ la.inv(S)
+            # print(W,W.shape)
+            delta_x = W @ v
+            Jo = I - W @ H  # for Joseph form
+            # Update the error covariance
 
-        P_update = Jo @ P @ Jo.T + W @ R_beacons[:num_beacons, :num_beacons] @ W.T
+            P_update = Jo @ U @ D @ U.T @ Jo.T + W @ R_beacons[:num_beacons, :num_beacons] @ W.T
+
+
+        elif(Use_LU):
+            return False #TODO
+
+        elif(Use_QR):
+            return False #TODO
+            
+
+        
+        else:
+            # print("Not factorizing")
+            S = H @ P @ H.T + R_beacons[:num_beacons, :num_beacons] #R_GNSS
+            # print(S.shape)
+            W = P @ H.T @ la.inv(S)
+            # print(W,W.shape)
+            delta_x = W @ v
+            Jo = I - W @ H  # for Joseph form
+            # Update the error covariance
+
+            P_update = Jo @ P @ Jo.T + W @ R_beacons[:num_beacons, :num_beacons] @ W.T
 
         return delta_x, P_update
     
