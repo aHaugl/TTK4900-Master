@@ -780,8 +780,6 @@ class ESKF_batch:
         elif(Use_QR):
             return False #TODO
             
-
-        
         else:
             # print("Not factorizing")
             S = H @ P @ H.T + R_beacons[:num_beacons, :num_beacons] #R_GNSS

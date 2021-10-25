@@ -219,15 +219,17 @@ Running the simulation
 """
 beacon_location: np.ndarray = loaded_data["beacon_location"]
 
-use_batch_pseudoranges: bool = True
-use_iterative_pseudoranges: bool = False
+# use_batch_pseudoranges: bool = True
+use_batch_pseudoranges: bool = False
+use_iterative_pseudoranges: bool = True
+# use_iterative_pseudoranges: bool = False
 Use_UDU: bool = False
 Use_QR: bool = False
 Use_LU: bool = False
 
 
 num_beacons = len(beacon_location)
-num_sims = 10
+num_sims = 1
 
 t_batch = np.zeros(num_sims)
 elapsed_batch = np.zeros(num_sims)
@@ -278,8 +280,6 @@ if (use_batch_pseudoranges):
 
 
 
-    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
 
 if (use_iterative_pseudoranges):
     for i in range(num_sims):
@@ -293,6 +293,11 @@ if (use_iterative_pseudoranges):
         GNSSk,
         ) = run_iterative_eskf (
                             N, loaded_data,
+                            rtol,
+                            atol,
+                            Use_UDU,
+                            Use_QR,
+                            Use_LU,
                             eskf_parameters,
                             x_pred_init, P_pred_init, p_std, 
                             num_beacons,
@@ -302,6 +307,9 @@ if (use_iterative_pseudoranges):
                             )
             
         elapsed_iterative[i] = time.time() - t_iterative[i] 
+    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+
 # # %%         
     # plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
 
@@ -311,7 +319,7 @@ if (use_iterative_pseudoranges):
 
 
 # %% Using UDU-factorization
-Use_UDU = True
+# Use_UDU = True
 if (use_batch_pseudoranges):
     for i in range(num_sims):  
         # timeit.timeit()
