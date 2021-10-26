@@ -277,10 +277,6 @@ if (use_batch_pseudoranges):
         elapsed_batch[i] = time.time() - t_batch[i]
 
 
-
-
-
-
 if (use_iterative_pseudoranges):
     for i in range(num_sims):
         print("Using iterative pseudoranges without factorization. Run number: ", i+1)  
@@ -314,13 +310,15 @@ if (use_iterative_pseudoranges):
     # plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
 
     # plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-
+# %%
+    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
 
 
 
 # %% Using UDU-factorization
 # Use_UDU = True
-if (use_batch_pseudoranges):
+if (use_batch_pseudoranges & Use_UDU):
     for i in range(num_sims):  
         # timeit.timeit()
         print("Using batch pseudoranges with UDU factorization. Run number: ", i+1)
@@ -357,7 +355,7 @@ if (use_batch_pseudoranges):
 
     print("Ellapsed time for batch: ", elapsed_batch_UDU)
     average_time_batch_UDU = np.average(elapsed_batch_UDU)
-    print("Average time for batch elapsed: ", average_time_batch_UDU, "seconds")
+    print("Average time for batch elapsed with UDU: ", average_time_batch_UDU, "seconds")
 
 # %% Plots and stuff                           
 
