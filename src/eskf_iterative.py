@@ -864,6 +864,7 @@ class ESKF_iterative:
             
             # d_p = d_p + W[:3]*(z - z_hat)
             d_p = W[:3]*(z - z_hat)
+            print("d_p = ", d_p)
             W = W.reshape(15,1) 
 
             P_Jo = I - W * H[i,:]
