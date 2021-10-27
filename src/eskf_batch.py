@@ -792,7 +792,7 @@ class ESKF_batch:
 
             P_update = Jo @ P @ Jo.T + W @ R_beacons[:num_beacons, :num_beacons] @ W.T
 
-        print("Delta_x = ", delta_x)
+        # print("Delta_x = ", delta_x)
         return delta_x, P_update
     
     

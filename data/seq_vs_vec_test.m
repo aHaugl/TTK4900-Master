@@ -18,7 +18,7 @@ p_k = [...
     100 -100 -100;
     -100 100 100;
     300 200 -300;
-    -300 200 300;
+    -30 200 300;
     200 -300 -200;
     -200 300 200;
         300 200 300;
@@ -53,7 +53,7 @@ for j = 1:n_elem
         z_hat_temp  = norm( p_hat - p_k(:,k) );
         z_hat       = [ z_hat; z_hat_temp; ];
         H           = [H; (p_hat - p_k(:,k))'/z_hat_temp];
-
+        H
         R           = blkdiag( R, r);
     end
     K = P*H'/(H*P*H' + R);
@@ -87,14 +87,22 @@ for j = 1:n_elem
 
     d_p = zeros(3,1);
     for k = 1:n_beacons
+
         z_hat_temp  = norm(p_hat - p_k(:,k));
         H           = (p_hat - p_k(:,k))'/z_hat_temp;
-%         H
+     
         z_hat       = norm( p_hat - p_k(:,k) ) + H*d_p;
         z           = norm( p - p_k(:,k) );
+
         R           = r;
         K           = P*H'/(H*P*H' + R);
+        K
         d_p         = d_p + K*(z-z_hat);
+        d_p
+        K*(z-z_hat)
+        z_hat
+        z_hat_temp
+        z_hat
 
 %         z_hat       = norm(p_hat + d_p - p_k(:,k));
 %         H           = (p_hat + d_p - p_k(:,k))'/z_hat;

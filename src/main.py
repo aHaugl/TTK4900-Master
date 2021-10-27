@@ -219,8 +219,8 @@ Running the simulation
 """
 beacon_location: np.ndarray = loaded_data["beacon_location"]
 
-# use_batch_pseudoranges: bool = True
-use_batch_pseudoranges: bool = False
+use_batch_pseudoranges: bool = True
+# use_batch_pseudoranges: bool = False
 use_iterative_pseudoranges: bool = True
 # use_iterative_pseudoranges: bool = False
 Use_UDU: bool = False
@@ -345,17 +345,17 @@ if (use_batch_pseudoranges & Use_UDU):
         elapsed_batch_UDU[i] = time.time() - t_batch_UDU[i]
         
     # %%
-    print("Ellapsed time for batch: ", elapsed_batch)
-    average_time_batch = np.average(elapsed_batch)
-    print("Average time for batch elapsed: ", average_time_batch, "seconds")
-    
-    print("Ellapsed time for iterative: ", elapsed_iterative)
-    average_time_batch = np.average(elapsed_iterative)
-    print("Average time elapsed for iterative: ", average_time_batch, "seconds")
+print("Ellapsed time for batch: ", elapsed_batch)
+average_time_batch = np.average(elapsed_batch)
+print("Average time  for batch elapsed: ", average_time_batch, "seconds")
 
-    print("Ellapsed time for batch: ", elapsed_batch_UDU)
-    average_time_batch_UDU = np.average(elapsed_batch_UDU)
-    print("Average time for batch elapsed with UDU: ", average_time_batch_UDU, "seconds")
+print("Ellapsed time for iterative: ", elapsed_iterative)
+average_time_batch = np.average(elapsed_iterative)
+print("Average time elapsed for iterative: ", average_time_batch, "seconds")
+
+print("Ellapsed time for batch: ", elapsed_batch_UDU)
+average_time_batch_UDU = np.average(elapsed_batch_UDU)
+print("Average time for batch elapsed with UDU: ", average_time_batch_UDU, "seconds")
 
 # %% Plots and stuff                           
 
