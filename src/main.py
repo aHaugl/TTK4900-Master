@@ -69,7 +69,8 @@ folder = os.path.dirname(__file__)
 # filename_to_load = f"{folder}/../data/simulation_params.mat"
 # filename_to_load = f"{folder}/../data/simulation_params_comb_maneuver.mat"
 # filename_to_load = f"{folder}/../data/simulation_params_comb_maneuver_long.mat"
-filename_to_load = f"{folder}/../data/simulation_params_comb_maneuver_long_ver2.mat"
+# filename_to_load = f"{folder}/../data/simulation_params_comb_maneuver_long_ver2.mat"
+filename_to_load = f"{folder}/../data/simulation_params_comb_maneuver_long_ver3.mat"
 cache_folder = os.path.join(folder,'..', 'cache')
 loaded_data = scipy.io.loadmat(filename_to_load)
 
@@ -229,7 +230,7 @@ Use_LU: bool = False
 
 
 num_beacons = len(beacon_location)
-num_sims = 1
+num_sims = 3
 
 t_batch = np.zeros(num_sims)
 elapsed_batch = np.zeros(num_sims)
@@ -353,9 +354,9 @@ print("Ellapsed time for iterative: ", elapsed_iterative)
 average_time_batch = np.average(elapsed_iterative)
 print("Average time elapsed for iterative: ", average_time_batch, "seconds")
 
-print("Ellapsed time for batch: ", elapsed_batch_UDU)
-average_time_batch_UDU = np.average(elapsed_batch_UDU)
-print("Average time for batch elapsed with UDU: ", average_time_batch_UDU, "seconds")
+# print("Ellapsed time for batch: ", elapsed_batch_UDU)
+# average_time_batch_UDU = np.average(elapsed_batch_UDU)
+# print("Average time for batch elapsed with UDU: ", average_time_batch_UDU, "seconds")
 
 # %% Plots and stuff                           
 

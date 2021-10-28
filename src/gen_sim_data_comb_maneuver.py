@@ -4,7 +4,7 @@ Created on Thu Apr 29 10:27:21 2021
 
 @author: Andreas
 """
-
+# %% 
 import numpy as np
 import scipy.io
 from tqdm import trange
@@ -108,24 +108,24 @@ tmc = 20 #time for maneuver change
 # x_true[:,ACC_BIAS_IDX] = temp[:,ACC_BIAS_IDX]
 # x_true[:,GYRO_BIAS_IDX] = temp[:,GYRO_BIAS_IDX]
 
-print("Generating GNSS-ranges without noise")
+print("Generating GNSS-ranges with noise")
 for i in trange(M): #M = len(timeGNSS)
-    # Generate range for first 20 seconds (no noise)    
+    # Generate range for first 20 seconds with noise
     if timeGNSS[i] <= tmc:
-        z_GNSS[i, 0] = 10
-        z_GNSS[i, 1] = 2*timeGNSS[i]
-        z_GNSS[i, 2] = 1 
+        z_GNSS[i, 0] = 10 + np.random.normal(0, 0.001)
+        z_GNSS[i, 1] = 2*timeGNSS[i] + np.random.normal(0, 0.001)
+        z_GNSS[i, 2] = 1 + np.random.normal(0, 0.004)
         
     if timeGNSS[i] > tmc:
         
         z_GNSS[i, 0] = (r * np.cos(omega * timeGNSS[i-tmc]) 
-                        )
+                        ) + np.random.normal(0, 0.01)
         
         z_GNSS[i, 1] = (1/10 *(r ** 2) * np.sin(2 * omega * timeGNSS[i-tmc])
                         + 40
-                        )
+                        ) + np.random.normal(0, 0.01)
         
-        z_GNSS[i, 2] = (1/z_ampl * r * omega * np.cos((omega / z_ampl ) * timeGNSS[i-tmc]))
+        z_GNSS[i, 2] = (1/z_ampl * r * omega * np.cos((omega / z_ampl ) * timeGNSS[i-tmc])) + np.random.normal(0, 0.04)
         
         
 print("Generating true POS, VEL, ACC, ACC_BIAS, GYRO_BIAS and gyro/acc-measurements. \n")
@@ -138,24 +138,7 @@ for k in trange(N): #N = len(timeIMU)
     x_true[k, GYRO_BIAS_IDX] = np.array([-9.5e-4 ,
                                           -7.3e-4,
                                           3.7e-4])
-    
-    
-    # # #Accelerometer bias is typically measured in milli-g's (m/s^2)
-    
-    # #Skal det modelleres som dette? Dette er det som er brukt i den lange matrisen?
-    # if k > 0:
-    #     x_true[k, ACC_BIAS_IDX] =  x_true[k-1, ACC_BIAS_IDX] + np.array(
-    #         [np.random.normal(0, 0.001),
-    #          np.random.normal(0, 0.001),
-    #          np.random.normal(0, 0.001)]
-    #         )
         
-    #     x_true[k, GYRO_BIAS_IDX] = x_true[k-1, GYRO_BIAS_IDX] + np.array(
-    #             [np.random.normal(0, 0.000001),
-    #              np.random.normal(0, 0.000001),
-    #              np.random.normal(0, 0.000001)]
-    #             )
-    
     #Accelerometer bias is typically measured in milli-g's (m/s^2)
     if k > 0:
         x_true[k, ACC_BIAS_IDX] =  np.array([-0.00875 + np.random.normal(0, 0.004),
@@ -165,8 +148,6 @@ for k in trange(N): #N = len(timeIMU)
         x_true[k, GYRO_BIAS_IDX] = np.array([-9.5e-4 + np.random.normal(0, 0.00005),
                                               -7.3e-4 + np.random.normal(0, 0.00005),
                                               3.7e-4 + np.random.normal(0, 0.00005)])
-
-
 
     #Move east for 20 seconds with 2m/s
     if timeIMU[k] <= tmc:
@@ -357,7 +338,7 @@ print ("x_true[0]: \n", x_true[0])
     # scipy.io.savemat(mat_file, {"vel_pred_test": vel_pred_test.T})
     # scipy.io.savemat(mat_file, {"pos_pred_test": pos_pred_test.T})
     # %%
-with open("../data/simulation_params_comb_maneuver_long_ver2.mat","wb") as mat_file:
+with open("../data/simulation_params_comb_maneuver_long_ver3.mat","wb") as mat_file:
     scipy.io.savemat(mat_file, {'leverarm': leverarm.T})
     scipy.io.savemat(mat_file, {'S_a': S_a.T})
     scipy.io.savemat(mat_file, {'S_g': S_g.T})
@@ -372,3 +353,5 @@ with open("../data/simulation_params_comb_maneuver_long_ver2.mat","wb") as mat_f
     scipy.io.savemat(mat_file, {"z_GNSS": z_GNSS.T})
     scipy.io.savemat(mat_file, {"omega_t": rollVelTrue.T})
     
+
+# %%

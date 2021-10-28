@@ -91,3 +91,8 @@ def UDU_factorization(P: np.ndarray, rtol, atol):
 
     assert np.allclose(P-U@D@U.T, 0, rtol=rtol, atol=atol) == True, f"utils.UDU-factorization: Factorization failed. P-U@D@U.T not close zero."
     return U, D
+
+
+def gram_schmidt_columns(X):
+    Q, R = np.linalg.qr(X)
+    return Q

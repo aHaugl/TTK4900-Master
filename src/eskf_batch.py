@@ -603,6 +603,7 @@ class ESKF_batch:
                           np.eye(3) - cross_product_matrix(delta_x[ERR_ATT_IDX]/2),
                           np.eye(6)))
         P_injected = G_injected @ P @ G_injected.T
+        P_injected = (P_injected + P_injected.T) / 2
         
         assert x_injected.shape ==(
             16,
@@ -759,31 +760,30 @@ class ESKF_batch:
             # print(H)
             H[k] = -(H[k])/est_ranges[k]
 
-        if (Use_UDU):
-            # print("Using UDU")
-            U, D = UDU_factorization(P,rtol,atol)
+        # if (Use_UDU):
+        #     # print("Using UDU")
+        #     U, D = UDU_factorization(P,rtol,atol)
             
-            S = H @ U @ D @ U.T @ H.T + R_beacons[:num_beacons, :num_beacons] #R_GNSS
-            # print(S.shape)
-            W = U @ D @ U.T @ H.T @ la.inv(S)
-            # print(W,W.shape)
-            delta_x = W @ v
-            Jo = I - W @ H  # for Joseph form
-            # Update the error covariance
+        #     S = H @ U @ D @ U.T @ H.T + R_beacons[:num_beacons, :num_beacons] #R_GNSS
+        #     # print(S.shape)
+        #     W = U @ D @ U.T @ H.T @ la.inv(S)
+        #     # print(W,W.shape)
+        #     delta_x = W @ v
+        #     Jo = I - W @ H  # for Joseph form
+        #     # Update the error covariance
 
-            P_update = Jo @ U @ D @ U.T @ Jo.T + W @ R_beacons[:num_beacons, :num_beacons] @ W.T
+        #     P_update = Jo @ U @ D @ U.T @ Jo.T + W @ R_beacons[:num_beacons, :num_beacons] @ W.T
 
 
-        elif(Use_LU):
-            return False #TODO
+        # elif(Use_LU):
+        #     return False #TODO
 
-        elif(Use_QR):
-            return False #TODO
+        # elif(Use_QR):
+        #     return False #TODO
             
-        else:
+        # else:
             # print("Not factorizing")
             S = H @ P @ H.T + R_beacons[:num_beacons, :num_beacons] #R_GNSS
-            # print(S.shape)
             W = P @ H.T @ la.inv(S)
             # print(W,W.shape)
             delta_x = W @ v
