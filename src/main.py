@@ -38,8 +38,9 @@ from cat_slice import CatSlice
 from utils import UDU_factorization
 
 from eskf_batch import ESKF_batch
-from eskf_iterative import ESKF_iterative
-from eskf_runner import run_batch_eskf, run_iterative_eskf
+from eskf_sequential import ESKF_sequential
+from eskf_UDU import ESKF_UDU
+from eskf_runner import run_batch_eskf, run_sequential_eskf, run_UDU_eskf
 from plotter import * #plot_error_v_sigma, plot_pos, plot_vel, plot_angle, plot_estimate, plot_3Dpath, plot_path, state_error_plots, plot_NEES, plot_NIS
 # from timer import * 
 
@@ -197,7 +198,7 @@ eskf_parameters = [acc_std,
 # %% Run estimation for
 #Number of seconds of simulation to run. len(timeIMU) decides max
 # N: int = int(6000/dt)
-N: int = int(100/dt) 
+N: int = int(50/dt) 
 # N: int = int(30000) 
 # N: int = int(90000)
 # N: int = len(timeIMU)
@@ -221,26 +222,44 @@ Running the simulation
 beacon_location: np.ndarray = loaded_data["beacon_location"]
 
 use_batch_pseudoranges: bool = True
-# use_batch_pseudoranges: bool = False
-use_iterative_pseudoranges: bool = True
-# use_iterative_pseudoranges: bool = False
-Use_UDU: bool = False
-Use_QR: bool = False
-Use_LU: bool = False
+# # use_batch_pseudoranges: bool = False
+use_sequential_pseudoranges: bool = True
+# use_sequential_pseudoranges: bool = False
+use_UDU: bool = False
+
 
 
 num_beacons = len(beacon_location)
-num_sims = 3
+num_sims = 10
 
+#Timers for batch-filter
 t_batch = np.zeros(num_sims)
 elapsed_batch = np.zeros(num_sims)
-t_batch_UDU = np.zeros(num_sims)
-elapsed_batch_UDU = np.zeros(num_sims)
 
+#Timers for sequential filter
+t_sequential = np.zeros(num_sims)
+elapsed_sequential = np.zeros(num_sims)
 
+#Timers for UDU filter
+t_UDU = np.zeros(num_sims)
+elapsed_UDU = np.zeros(num_sims)
 
-t_iterative = np.zeros(num_sims)
-elapsed_iterative = np.zeros(num_sims)
+#Timers for submodules
+total_elapsed_pred_timer_batch = np.zeros(num_sims)
+total_elapsed_est_timer_batch = np.zeros(num_sims)
+average_elapsed_pred_timer_batch = np.zeros(num_sims)
+average_elapsed_est_timer_batch = np.zeros(num_sims)
+
+total_elapsed_pred_timer_sequential = np.zeros(num_sims)
+total_elapsed_est_timer_sequential = np.zeros(num_sims)
+average_elapsed_pred_timer_sequential = np.zeros(num_sims)
+average_elapsed_est_timer_sequential = np.zeros(num_sims)
+
+total_elapsed_pred_timer_UDU = np.zeros(num_sims)
+total_elapsed_est_timer_UDU = np.zeros(num_sims)
+average_elapsed_pred_timer_UDU = np.zeros(num_sims)
+average_elapsed_est_timer_UDU = np.zeros(num_sims)
+
 
 # %%
 print("Number of beacons used: ", num_beacons)
@@ -261,6 +280,10 @@ if (use_batch_pseudoranges):
         x_est,
         P_est,
         GNSSk,
+        est_timer,
+        pred_timer,
+        elapsed_pred_timer_batch,
+        elapsed_est_timer_batch
         ) = run_batch_eskf (
                             N, loaded_data,
                             rtol,
@@ -276,19 +299,42 @@ if (use_batch_pseudoranges):
                             debug=False
                             )
         elapsed_batch[i] = time.time() - t_batch[i]
+        #Summed up time used in prediction steps
+        total_elapsed_pred_timer_batch[i] = np.sum(elapsed_pred_timer_batch)
+        #Summed up time used in estimation steps
+        total_elapsed_est_timer_batch[i] = np.sum(elapsed_est_timer_batch)
 
 
-if (use_iterative_pseudoranges):
+    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+
+    # print("Ellapsed time for batch: ", elapsed_batch)
+    # print("Summed runtime used in prediction module: ", total_elapsed_pred_timer_batch, "seconds")
+    # print("Portion of runtime prediction module occupies: ", total_elapsed_pred_timer_batch/elapsed_batch, "%")
+    # print("Summed runtime used in estimation module: ", total_elapsed_est_timer_batch, "seconds")
+    # print("Portion of runtime estimation module occupies: ", total_elapsed_est_timer_batch/elapsed_batch, "%")
+  
+
+    # average_time_batch = np.average(elapsed_batch)
+    # print("Average time for batch elapsed: ", average_time_batch, "seconds")
+    # average_elapsed_pred_timer_batch = np.average(total_elapsed_pred_timer_batch)
+    # average_elapsed_est_timer_batch = np.average(total_elapsed_est_timer_batch)
+    # print("Average runtime for prediction module: ", average_elapsed_pred_timer_batch, ", where average occupies =", average_elapsed_pred_timer_batch/average_time_batch*100, "% " "relative to total time")
+    # print("Average runtime for estimation module: ", average_elapsed_est_timer_batch, ", where average occupies =", average_elapsed_est_timer_batch/average_time_batch*100, "% " "relative to total time")
+
+if (use_sequential_pseudoranges):
     for i in range(num_sims):
-        print("Using iterative pseudoranges without factorization. Run number: ", i+1)  
+        print("Using sequential pseudoranges without factorization. Run number: ", i+1)  
         # timeit.timeit()
-        t_iterative[i] = time.time()
+        t_sequential[i] = time.time()
         
         (x_pred,
         x_est,
         P_est,
         GNSSk,
-        ) = run_iterative_eskf (
+        elapsed_pred_timer_sequential,
+        elapsed_est_timer_sequential
+        ) = run_sequential_eskf (
                             N, loaded_data,
                             rtol,
                             atol,
@@ -303,32 +349,31 @@ if (use_iterative_pseudoranges):
                             debug=False
                             )
             
-        elapsed_iterative[i] = time.time() - t_iterative[i] 
+        elapsed_sequential[i] = time.time() - t_sequential[i]
+        #Summed up time used in prediction steps
+        total_elapsed_pred_timer_sequential[i] = np.sum(elapsed_pred_timer_sequential)
+        #Summed up time used in estimation steps
+        total_elapsed_est_timer_sequential[i] = np.sum(elapsed_est_timer_sequential)
+
     plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
     plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-
-# # %%         
-    # plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-
-    # plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-# %%
-    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-
-
-
-# %% Using UDU-factorization
-# Use_UDU = True
-if (use_batch_pseudoranges & Use_UDU):
+    
+if (use_UDU):
+    
     for i in range(num_sims):  
         # timeit.timeit()
-        print("Using batch pseudoranges with UDU factorization. Run number: ", i+1)
-        t_batch_UDU[i] = time.time()
+        print("Using batch pseudoranges without factorization. Run number: ", i+1)
+        
+        t_UDU[i] = time.time()
         
         (x_pred,
         x_est,
         P_est,
         GNSSk,
+        est_timer,
+        pred_timer,
+        elapsed_pred_timer_UDU,
+        elapsed_est_timer_UDU
         ) = run_batch_eskf (
                             N, loaded_data,
                             rtol,
@@ -343,21 +388,70 @@ if (use_batch_pseudoranges & Use_UDU):
                             use_GNSSaccuracy=False, doGNSS=True,
                             debug=False
                             )
-        elapsed_batch_UDU[i] = time.time() - t_batch_UDU[i]
-        
-    # %%
-print("Ellapsed time for batch: ", elapsed_batch)
-average_time_batch = np.average(elapsed_batch)
-print("Average time  for batch elapsed: ", average_time_batch, "seconds")
+        elapsed_UDU[i] = time.time() - t_UDU[i]
+        #Summed up time used in prediction steps
+        total_elapsed_pred_timer_UDU[i] = np.sum(elapsed_pred_timer_UDU)
+        #Summed up time used in estimation steps
+        total_elapsed_est_timer_UDU[i] = np.sum(elapsed_est_timer_UDU)
 
-print("Ellapsed time for iterative: ", elapsed_iterative)
-average_time_batch = np.average(elapsed_iterative)
-print("Average time elapsed for iterative: ", average_time_batch, "seconds")
+## Batch timings
+    print("Ellapsed time for batch: ", elapsed_batch)
+    print("Summed runtime used in prediction module: ", total_elapsed_pred_timer_batch, "seconds")
+    print("Portion of runtime prediction module occupies: ", total_elapsed_pred_timer_batch/elapsed_batch, "%")
+    print("Summed runtime used in estimation module: ", total_elapsed_est_timer_batch, "seconds")
+    print("Portion of runtime estimation module occupies: ", total_elapsed_est_timer_batch/elapsed_batch, "%")
+  
 
-# print("Ellapsed time for batch: ", elapsed_batch_UDU)
-# average_time_batch_UDU = np.average(elapsed_batch_UDU)
-# print("Average time for batch elapsed with UDU: ", average_time_batch_UDU, "seconds")
+    average_time_batch = np.average(elapsed_batch)
+    print("Average time for batch elapsed: ", average_time_batch, "seconds")
+    average_elapsed_pred_timer_batch = np.average(total_elapsed_pred_timer_batch)
+    average_elapsed_est_timer_batch = np.average(total_elapsed_est_timer_batch)
+    print("Average runtime for prediction module: ", average_elapsed_pred_timer_batch, ", where average occupies =", average_elapsed_pred_timer_batch/average_time_batch*100, "% " "relative to total time")
+    print("Average runtime for estimation module: ", average_elapsed_est_timer_batch, ", where average occupies =", average_elapsed_est_timer_batch/average_time_batch*100, "% " "relative to total time")
 
+## Iterative timings
+    print("Ellapsed time for sequential: ", elapsed_sequential)
+    print("Summed runtime used in prediction module: ", total_elapsed_pred_timer_sequential, "seconds")
+    print("Portion of runtime prediction module occupies: ", total_elapsed_pred_timer_sequential/elapsed_sequential,"%")
+    print("Summed runtime used in estimation module: ", total_elapsed_est_timer_sequential, "seconds")
+    print("Portion of runtime estimation module occupies: ", total_elapsed_est_timer_sequential/elapsed_sequential,"%")
+  
+
+    average_time_sequential = np.average(elapsed_sequential)
+    print("Average time for sequential elapsed: ", average_time_sequential, "seconds")
+    average_elapsed_pred_timer_sequential = np.average(total_elapsed_pred_timer_sequential)
+    average_elapsed_est_timer_sequential = np.average(total_elapsed_est_timer_sequential)
+    print("Average runtime for prediction module: ", average_elapsed_pred_timer_sequential, ", where average occupies =", average_elapsed_pred_timer_sequential/average_time_sequential*100, "% " "relative to total time")
+    print("Average runtime for estimation module: ", average_elapsed_est_timer_sequential, ", where average occupies =", average_elapsed_est_timer_sequential/average_time_sequential*100, "% " "relative to total time")
+
+    ## UDU timings
+    print("Ellapsed time for UDU: ", elapsed_UDU)
+    print("Summed runtime used in UDU prediction module: ", total_elapsed_pred_timer_UDU, "seconds")
+    print("Portion of runtime prediction module in UDU occupies: ", total_elapsed_pred_timer_UDU/elapsed_UDU,"%")
+    print("Summed runtime used in UDU estimation module: ", total_elapsed_est_timer_UDU, "seconds")
+    print("Portion of runtime estimation module in UDU ccupies: ", total_elapsed_est_timer_UDU/elapsed_UDU,"%")
+  
+
+    average_time_UDU = np.average(elapsed_UDU)
+    print("Average time for UDU elapsed: ", average_time_UDU, "seconds")
+    average_elapsed_pred_timer_UDU = np.average(total_elapsed_pred_timer_UDU)
+    average_elapsed_est_timer_UDU = np.average(total_elapsed_est_timer_UDU)
+    print("Average runtime for prediction module in UDU: ", average_elapsed_pred_timer_UDU, ", where average occupies =", average_elapsed_pred_timer_UDU/average_time_UDU*100, "% " "relative to total time")
+    print("Average runtime for estimation module in UDU: ", average_elapsed_est_timer_UDU, ", where average occupies =", average_elapsed_est_timer_UDU/average_time_UDU*100, "% " "relative to total time")
+
+## Relative relations
+print("Average Relative speedup of sequential vs batch: ", (average_time_batch - average_time_sequential)/average_time_batch*100,"%")
+print("Average Relative speedup of pred module in sequential vs batch: ", (average_elapsed_pred_timer_batch - average_elapsed_pred_timer_sequential)/average_elapsed_pred_timer_batch*100,"%")
+print("Average Relative speedup of est module in  sequential vs batch: ", (average_elapsed_est_timer_batch - average_elapsed_est_timer_sequential)/average_elapsed_est_timer_batch*100,"%")
+
+print("Average Relative speedup of UDU vs batch: ", (average_time_batch - average_time_UDU)/average_time_batch*100,"%")
+print("Average Relative speedup of pred module in sequential vs batch: ", (average_elapsed_pred_timer_batch - average_elapsed_pred_timer_UDU)/average_elapsed_pred_timer_batch*100,"%")
+print("Average Relative speedup of est module in  sequential vs batch: ", (average_elapsed_est_timer_batch - average_elapsed_est_timer_UDU)/average_elapsed_est_timer_batch*100,"%")
+
+
+print("Average Relative speedup of UDU vs sequential: ", (average_time_sequential - average_time_UDU)/average_time_sequential*100,"%")
+print("Average Relative speedup of pred module in sequential vs batch: ", (average_elapsed_pred_timer_sequential - average_elapsed_pred_timer_UDU)/average_elapsed_pred_timer_sequential*100,"%")
+print("Average Relative speedup of est module in  sequential vs batch: ", (average_elapsed_est_timer_sequential - average_elapsed_est_timer_UDU)/average_elapsed_est_timer_sequential*100,"%")
 # %% Plots and stuff                           
 
 # # plt.close("all")

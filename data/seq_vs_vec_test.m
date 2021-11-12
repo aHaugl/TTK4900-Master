@@ -53,7 +53,7 @@ for j = 1:n_elem
         z_hat_temp  = norm( p_hat - p_k(:,k) );
         z_hat       = [ z_hat; z_hat_temp; ];
         H           = [H; (p_hat - p_k(:,k))'/z_hat_temp];
-        H
+%         H
         R           = blkdiag( R, r);
     end
     K = P*H'/(H*P*H' + R);
@@ -92,19 +92,19 @@ for j = 1:n_elem
         H           = (p_hat - p_k(:,k))'/z_hat_temp;
      
         z_hat       = norm( p_hat - p_k(:,k) ) + H*d_p;
-        H*d_p
+%         H*d_p
         z           = norm( p - p_k(:,k) );
 
         R           = r;
         K           = P*H'/(H*P*H' + R);
-        d_p
-        z-z_hat
-        K*(z-z_hat)
+%         d_p
+%         z-z_hat
+%         K*(z-z_hat)
         d_p         = d_p + K*(z-z_hat);
-        d_p
-        z_hat
-        z_hat_temp
-        z_hat
+%         d_p
+%         z_hat
+%         z_hat_temp
+%         z_hat
 
 %         z_hat       = norm(p_hat + d_p - p_k(:,k));
 %         H           = (p_hat + d_p - p_k(:,k))'/z_hat;

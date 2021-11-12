@@ -1,7 +1,7 @@
 import numpy as np
 from mytypes import ArrayLike
 
-
+# %%
 def cross_product_matrix(n: ArrayLike, debug: bool = True) -> np.ndarray:
     assert len(
         n) == 3, f"utils.cross_product_matrix: Vector not of length 3: {n}"
@@ -56,10 +56,10 @@ def UDU_factorization(P: np.ndarray, rtol, atol):
             U, D np.ndarray: The upper triangular matrix U, and Diagonal matrix D
         """
 
-    assert P.shape == (
-        15,
-        15,
-    ), f"utils.UDU-factorization: P incorrect shape {P.shape}"
+    # assert P.shape == (
+    #     15,
+    #     15,
+    # ), f"utils.UDU-factorization: P incorrect shape {P.shape}"
     assert np.allclose(P, P.T, rtol=rtol, atol=atol) == True, f"utils.UDU-factorization: P Not symmetrical."
 
     n = len(P)
@@ -80,19 +80,54 @@ def UDU_factorization(P: np.ndarray, rtol, atol):
 
     D = np.diag(d)
 
-    assert U.shape == (
-            15,
-            15,
-        ), f"utils.UDU-factorization: U shape incorrect {U.shape}"
-    assert D.shape == (
-            15,
-            15,
-        ), f"utils.UDU-factorization: D shape incorrect {D.shape}"
+    # assert U.shape == (
+    #         15,
+    #         15,
+    #     ), f"utils.UDU-factorization: U shape incorrect {U.shape}"
+    # assert D.shape == (
+    #         15,
+    #         15,
+    #     ), f"utils.UDU-factorization: D shape incorrect {D.shape}"
 
     assert np.allclose(P-U@D@U.T, 0, rtol=rtol, atol=atol) == True, f"utils.UDU-factorization: Factorization failed. P-U@D@U.T not close zero."
     return U, D
 
+def mod_gram_schmidt(A):
+    """[summary]
 
-def gram_schmidt_columns(X):
-    Q, R = np.linalg.qr(X)
-    return Q
+    Args:
+        A ([type]): [description]
+    """
+    d,n = np.shape(A)
+    m = np.minimum(d,n)
+    
+    Q = np.zeros((m,m))
+    R = np.zeros((n,n))
+    
+    for i in range(n):
+        v = np.reshape(A[:,i],((3,1)))
+
+        for j in range(i):
+            R[j,i] = (np.reshape(Q[:,j],((3,1)))).T @ v
+            v = (v)-R[j,i] * np.reshape(Q[:,j],((3,1)))
+        
+        R[i,i] = np.linalg.norm(v)
+        
+        Q[:,i] = (v / R[i,i]).T
+        
+    return Q,R
+        
+
+# function [Q,R]=mgs(A)
+# [m,n]=size(A);
+# V=A;
+# Q=zeros(m,n);
+# R=zeros(n,n);
+# for i=1:n
+#   R(i,i)=norm(V(:,i));
+#   Q(:,i)=V(:,i)/R(i,i);
+#   for j=i+1:n
+#     R(i,j)=Q(:,i)'*V(:,j);
+#     V(:,j)=V(:,j)-R(i,j)*Q(:,i);
+#   end
+# end

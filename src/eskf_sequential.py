@@ -47,7 +47,7 @@ ERR_ACC_BIAS_IDX = CatSlice(start=9, stop=12)
 ERR_GYRO_BIAS_IDX = CatSlice(start=12, stop=15)
 
 @dataclass
-class ESKF_iterative:
+class ESKF_sequential:
     sigma_acc: float #acc_std
     sigma_gyro: float #rate_std
 
@@ -202,7 +202,7 @@ class ESKF_iterative:
         ), f"ESKF.predict_nominal: x_nominal_predicted shape incorrect {x_nominal_predicted.shape}"
         return x_nominal_predicted
     
-    def Aerr(
+    def Phi_err(
             self,
             x_nominal: np.ndarray,
             acceleration: np.ndarray,
@@ -225,44 +225,44 @@ class ESKF_iterative:
         
         Returns
         -------
-        Aerr: Continous time error state dynamics Jacobian (15,15), correspon
+        Phi_err: Continous time error state dynamics Jacobian (15,15), correspon
 
         """
         assert x_nominal.shape == (
             16,
-        ), f"ESKF.Aerr: x_nominal incorrect shape {x_nominal.shape}"
+        ), f"ESKF.Phi_err: x_nominal incorrect shape {x_nominal.shape}"
         assert acceleration.shape == (
             3,
-        ), f"ESKF.Aerr: acceleration incorrect shape {acceleration.shape}"
+        ), f"ESKF.Phi_err: acceleration incorrect shape {acceleration.shape}"
         assert omega.shape == (
             3,
-        ), f"ESKF.Aerr: omega incorrect shape {omega.shape}"
+        ), f"ESKF.Phi_err: omega incorrect shape {omega.shape}"
         
         #Rotation matrix
         R = quaternion_to_rotation_matrix(x_nominal[ATT_IDX], debug = self.debug)
         
         #Allocate matrix
-        A = np.zeros((15,15))
+        Phi = np.zeros((15,15))
         
         #Set submatrices
-        A[POS_IDX * VEL_IDX] = np.eye(3)
-        A[VEL_IDX * ERR_ATT_IDX] = -R @ cross_product_matrix(acceleration)
-        A[VEL_IDX * ERR_ACC_BIAS_IDX] = -cross_product_matrix(omega)
-        A[ERR_ATT_IDX * ERR_GYRO_BIAS_IDX] = -np.eye(3)
-        A[ERR_ACC_BIAS_IDX * ERR_ACC_BIAS_IDX] = -self.p_acc * np.eye(3)
-        A[ERR_GYRO_BIAS_IDX * ERR_GYRO_BIAS_IDX] = -self.p_gyro * np.eye(3)
+        Phi[POS_IDX * VEL_IDX] = np.eye(3)
+        Phi[VEL_IDX * ERR_ATT_IDX] = -R @ cross_product_matrix(acceleration)
+        Phi[VEL_IDX * ERR_ACC_BIAS_IDX] = -cross_product_matrix(omega)
+        Phi[ERR_ATT_IDX * ERR_GYRO_BIAS_IDX] = -np.eye(3)
+        Phi[ERR_ACC_BIAS_IDX * ERR_ACC_BIAS_IDX] = -self.p_acc * np.eye(3)
+        Phi[ERR_GYRO_BIAS_IDX * ERR_GYRO_BIAS_IDX] = -self.p_gyro * np.eye(3)
         
         #Bias Correction
-        A[VEL_IDX * ERR_ACC_BIAS_IDX] = A[VEL_IDX * ERR_ACC_BIAS_IDX] @ self.S_a
-        A[ERR_ATT_IDX * ERR_GYRO_BIAS_IDX] = (
-            A[ERR_ATT_IDX * ERR_GYRO_BIAS_IDX] @ self.S_g
+        Phi[VEL_IDX * ERR_ACC_BIAS_IDX] = Phi[VEL_IDX * ERR_ACC_BIAS_IDX] @ self.S_a
+        Phi[ERR_ATT_IDX * ERR_GYRO_BIAS_IDX] = (
+            Phi[ERR_ATT_IDX * ERR_GYRO_BIAS_IDX] @ self.S_g
         )
     
-        assert A.shape ==(
+        assert Phi.shape ==(
             15,
             15,
-            ), f"ESKF.Aerr: A-error matrix shape incorrect {A.shape}"
-        return A
+            ), f"ESKF.Phi_err: A-error matrix shape incorrect {Phi.shape}"
+        return Phi
     
     def Gerr(self,
              x_nominal: np.ndarray,
@@ -342,14 +342,14 @@ class ESKF_iterative:
         
         
         #Calculate continious time error state dynamics Jacobian
-        A = self.Aerr(x_nominal, acceleration, omega)
-        # print("Aerr_A: ", A)
+        Phi = self.Phi_err(x_nominal, acceleration, omega)
+        # print("Phi_err: ", A)
         #Calculate continuous time error state noise input matrix
         G = self.Gerr(x_nominal)
         # print("Gerr_G: ", G)
         
-        V = np.block([[-A, G @ self.Q_err @ G.T],
-                      [np.zeros_like(A), A.T]]) * Ts
+        V = np.block([[-Phi, G @ self.Q_err @ G.T],
+                      [np.zeros_like(Phi), Phi.T]]) * Ts
         
         assert V.shape == (
             30,
@@ -358,10 +358,10 @@ class ESKF_iterative:
         VanLoanMatrix = la.expm(V)
         # VanLoanMatrix = np,identity(V.shape[0]) + V #Fast but unsafe
         
-        Ad = VanLoanMatrix[CatSlice(15, 30)**2].T
-        GQGd = Ad @ VanLoanMatrix[CatSlice(0, 15) * CatSlice(15, 30)]
+        Phid = VanLoanMatrix[CatSlice(15, 30)**2].T
+        GQGd = Phid @ VanLoanMatrix[CatSlice(0, 15) * CatSlice(15, 30)]
         
-        assert Ad.shape == (
+        assert Phid.shape == (
             15,
             15,
             ), f"ESKF.discrete_error_matrices: Ad-matrix shape incorrect {Ad.shape}"
@@ -370,7 +370,7 @@ class ESKF_iterative:
             15,
             ), f"ESKF.discrete_error_matrices: GQGd-matrix shape incorrect {GQGd.shape}"
         
-        return Ad, GQGd
+        return Phid, GQGd
     
     def predict_covariance(
             self,
@@ -412,14 +412,14 @@ class ESKF_iterative:
 
         
         #Compute discrete time linearized error state transition and covariance matrix
-        Ad, GQGd = self.discrete_error_matrices(
+        Phid, GQGd = self.discrete_error_matrices(
             x_nominal,
             acceleration,
             omega,
             Ts)
         # print("GQGd from predict_covariance: ", GQGd)
         
-        P_predicted = Ad @ P @ Ad.T + GQGd
+        P_predicted = Phid @ P @ Phid.T + GQGd
         
         # print(P_predicted[ERR_ATT_IDX,ERR_ATT_IDX])
         
@@ -597,7 +597,9 @@ class ESKF_iterative:
                           np.eye(3) - cross_product_matrix(delta_x[ERR_ATT_IDX]/2),
                           np.eye(6)))
         P_injected = G_injected @ P @ G_injected.T # + Q_d
-        P_injected = (P_injected +P_injected.T) / 2
+        
+        ## Not needed since Joseph form makes it symmetric
+        # P_injected = (P_injected +P_injected.T) / 2
         
         assert x_injected.shape ==(
             16,
@@ -665,7 +667,7 @@ class ESKF_iterative:
         ), f"ESKF.update_GNSS: lever_arm shape incorrect {lever_arm.shape}"
 
 
-        delta_x, P_update = self.iterative_pseudorange(
+        delta_x, P_update = self.sequential_pseudorange(
                                         rtol,
                                         atol,
                                         x_nominal,
@@ -692,7 +694,7 @@ class ESKF_iterative:
         return x_injected, P_injected
 
 
-    def iterative_pseudorange(self,
+    def sequential_pseudorange(self,
                     rtol,
                     atol,
                     x_nominal: np.ndarray,
@@ -743,7 +745,7 @@ class ESKF_iterative:
         z = 0
         z_hat = 0
         H = np.zeros((1,15))
-        W = np.zeros((15,1))
+        KeyboardInterrupt = np.zeros((15,1))
         # H = {}
         delta_x = np.zeros((15,1))
         pos_est = np.reshape(pos_est,((1,3)))
@@ -766,24 +768,25 @@ class ESKF_iterative:
 
             S = H @ P @ H.T + R_beacons[i,i]  #Skal være R1x1
             #Skal være R15x1
-            # W = np.reshape(P @ H[i].T / S,((15,1)))
-            W = P @ H.T / S
+            # K = np.reshape(P @ H[i].T / S,((15,1)))
+            K = P @ H.T / S
             
             #R15x1
-            delta_x = delta_x + W*(z-z_hat)
+            delta_x = delta_x + K*(z-z_hat)
             # print("z-z_hat = ", z-z_hat)
-            # print("W =", W)
+            # print("K =", K)
             # print("z-z_hat =", z-z_hat) #Dette blir null fordi det er perfekte GNSS-målinger i forhold til x_true?
             # print("delta_x = ", delta_x) #Problemet er jo da at alle satelitter gir perfekte resultater, og gainen gjør 
             #                             #ingenting for korreksjon
             # print("delta_x = ", delta_x)
-            # W = W.reshape(15,1) 
+            # K = K.reshape(15,1) 
 
-            P_Jo = I - W * H
+            P_Jo = I - K * H
             # print ("H = ", H)
-            # print ("W*H", W*H)
-            # print("W@H", W@H)
-            P_update = P_Jo @ P @ P_Jo.T + W * R_beacons[i,i] * W.T 
+            # print ("K*H", K*H)
+            # print("K@H", K@H)
+            #Using the symmetric and positive Joseph form
+            P_update = P_Jo @ P @ P_Jo.T + K * R_beacons[i,i] * K.T 
         
         
         #Sjekk i injiseringen om det er gjort phi*p*phi pluss Qd der og P = (P+P')/2

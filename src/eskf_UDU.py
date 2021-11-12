@@ -12,14 +12,16 @@ Created on Tue Apr 13 12:05:48 2021
 @author: andhaugl
 """
 # %% imports
+from os import PathLike
 from typing import Tuple, Sequence, Any
 from dataclasses import dataclass, field
+
+from numpy.linalg import norm
 from cat_slice import CatSlice
 
 import numpy as np
 import scipy.linalg as la
 
-# import sys
 
 from quaternion import (
     euler_to_quaternion,
@@ -30,9 +32,9 @@ from quaternion import (
 
 
 # from state import NominalIndex, ErrorIndex
-from utils import cross_product_matrix, UDU_factorization
+from utils import cross_product_matrix, UDU_factorization, mod_gram_schmidt
 
-# from timer import*
+from timer import*
 
 # %% indices
 POS_IDX = CatSlice(start=0, stop=3)
@@ -45,14 +47,7 @@ ERR_ACC_BIAS_IDX = CatSlice(start=9, stop=12)
 ERR_GYRO_BIAS_IDX = CatSlice(start=12, stop=15)
 
 @dataclass
-class ESKF_batch:
-    # rtol: float
-    # atol: float
-
-    # Use_UDU: bool
-    # Use_QR: bool
-    # Use_LU: bool
-
+class ESKF_UDU:
     sigma_acc: float #acc_std
     sigma_gyro: float #rate_std
 
@@ -64,9 +59,8 @@ class ESKF_batch:
 
     S_a: np.ndarray = np.eye(3)
     S_g: np.ndarray = np.eye(3)
-
     debug: bool = True
-
+    use_pseudorange: bool = True
 
     g: np.ndarray = np.array([0, 0,9.82])
 
@@ -331,8 +325,8 @@ class ESKF_batch:
         
         Returns
         -------
-        Tuple[np.ndarray, np.ndarray]: Discrete error matrices (Tuple, Ad, GQGd)
-            Ad: Discrete time error state system matrix (15,15)
+        Tuple[np.ndarray, np.ndarray]: Discrete error matrices (Tuple, Phid, GQGd)
+            Phid: Discrete time error state system matrix (15,15)
             GQGd: Discrete time noise covariance matrix (15,15)
 
         """
@@ -362,7 +356,7 @@ class ESKF_batch:
             30,
             ), f"ESKF.discrete_error_matrices: Van Loan matrix shape incorrect {V.shape}"
         VanLoanMatrix = la.expm(V)
-        # VanLoanMatrix = np,identity(V.shape[0]) + V #Fast but unsafe
+        # VanLoanMatrix = np.identity(V.shape[0]) + V #Fast but unsafe
         
         Phid = VanLoanMatrix[CatSlice(15, 30)**2].T
         GQGd = Phid @ VanLoanMatrix[CatSlice(0, 15) * CatSlice(15, 30)]
@@ -380,11 +374,14 @@ class ESKF_batch:
     
     def predict_covariance(
             self,
+            rtol,
+            atol,
             x_nominal: np.ndarray,
             P: np.ndarray,
             acceleration: np.ndarray,
             omega: np.ndarray,
             Ts: float,
+            use_UDU
             ) -> np.ndarray:
         
         """Predicts the error state covariance Ts time units ahead using linearized
@@ -416,16 +413,35 @@ class ESKF_batch:
             ), f"ESKF.predict_covariance: omega shape inncorrect {omega.shape}"
         
 
-        
-        #Compute discrete time linearized error state transition and covariance matrix
-        Phid, GQGd = self.discrete_error_matrices(
-            x_nominal,
-            acceleration,
-            omega,
-            Ts)
-        # print("GQGd from predict_covariance: ", GQGd)
-        
-        P_predicted = Phid @ P @ Phid.T + GQGd
+        if (use_UDU):
+            #Can change from VanLoan here to something else
+            #Compute discrete time linearized error state transition and covariance matrix
+            Phid, GQGd = self.discrete_error_matrices(
+                x_nominal,
+                acceleration,
+                omega,
+                Ts)
+            # print("GQGd from predict_covariance: ", GQGd)
+            
+            U, D = UDU_factorization(P,rtol,atol)
+            # U_barD_barU_bar.T = P_predicted
+            D_tilde = np.block([[D, np.zeros_like(GQGd)],
+                      [np.zeros_like(D), GQGd]])
+            Y = np.block([Phid @ U, np.eye(np.shape(Phid)[0])]) 
+            
+            P_predicted = Phid @ U @ D @ U.T @ Phid.T + GQGd
+            
+            
+        else:
+            #Compute discrete time linearized error state transition and covariance matrix
+            Phid, GQGd = self.discrete_error_matrices(
+                x_nominal,
+                acceleration,
+                omega,
+                Ts)
+            # print("GQGd from predict_covariance: ", GQGd)
+            
+            P_predicted = Phid @ P @ Phid.T + GQGd
         
         # print(P_predicted[ERR_ATT_IDX,ERR_ATT_IDX])
         
@@ -436,13 +452,15 @@ class ESKF_batch:
         
         return P_predicted
     
-    
     def predict(self,
+                rtol,
+                atol,
                 x_nominal: np.ndarray,
                 P: np.ndarray,
                 z_acc: np.ndarray,
                 z_gyro: np.ndarray,
                 Ts: float,
+                use_UDU: bool
                 ) -> np.array:#Tuple [np.array, np.array]:
         """
         
@@ -507,11 +525,14 @@ class ESKF_batch:
                                                    Ts
                                                    )
         
-        P_predicted = self.predict_covariance(x_nominal,
+        P_predicted = self.predict_covariance(rtol,
+                                              atol,
+                                              x_nominal,
                                               P,
                                               acceleration,
                                               omega,
-                                              Ts)
+                                              Ts,
+                                              use_UDU)
         # print("x_nominal_predicted[k+1]: ", x_nominal_predicted[0:6])
         assert x_nominal_predicted.shape ==(
             16,
@@ -602,8 +623,10 @@ class ESKF_batch:
             la.block_diag(np.eye(6),
                           np.eye(3) - cross_product_matrix(delta_x[ERR_ATT_IDX]/2),
                           np.eye(6)))
-        P_injected = G_injected @ P @ G_injected.T
-        P_injected = (P_injected + P_injected.T) / 2
+        P_injected = G_injected @ P @ G_injected.T # + Q_d
+        
+        ## Not needed since Joseph form makes it symmetric
+        # P_injected = (P_injected +P_injected.T) / 2
         
         assert x_injected.shape ==(
             16,
@@ -671,22 +694,22 @@ class ESKF_batch:
         ), f"ESKF.update_GNSS: lever_arm shape incorrect {lever_arm.shape}"
 
 
-        delta_x, P_update = self.batch_pseudorange(
-                                                rtol,
-                                                atol,
-                                                x_nominal,
-                                                z_GNSS_position,
-                                                P,
-                                                R_GNSS,
-                                                beacon_location,
-                                                R_beacons,
-                                                Use_UDU,
-                                                Use_QR,
-                                                Use_LU
-                                                ) 
-        # Error state injection
-        x_injected, P_injected = self.inject(x_nominal, delta_x, P_update)
+        delta_x, P_update = self.sequential_pseudorange(
+                                        rtol,
+                                        atol,
+                                        x_nominal,
+                                        z_GNSS_position,
+                                        P,
+                                        R_GNSS,
+                                        beacon_location,
+                                        R_beacons,
+                                        Use_UDU,
+                                        Use_QR,
+                                        Use_LU
+                                        ) 
         
+        x_injected, P_injected = self.inject(x_nominal, delta_x, P_update)
+
         assert x_injected.shape == (
             16,
         ), f"ESKF.update_GNSS: x_injected shape incorrect {x_injected.shape}"
@@ -696,8 +719,9 @@ class ESKF_batch:
         ), f"ESKF.update_GNSS: P_injected shape incorrect {P_injected.shape}"
 
         return x_injected, P_injected
-  
-    def batch_pseudorange(self,
+
+
+    def sequential_pseudorange(self,
                     rtol,
                     atol,
                     x_nominal: np.ndarray,
@@ -711,9 +735,8 @@ class ESKF_batch:
                     Use_UDU: bool,
                     Use_QR: bool,
                     Use_LU: bool
-
                     ) -> np.ndarray:
-    
+        
         """
         Generate pseudoranges and design matrix H whenever a GNSS measurement
         is recieved (1Hz).
@@ -728,74 +751,78 @@ class ESKF_batch:
         I = np.eye(*P.shape)
         
         num_beacons = len(b_loc)
-        # num_beacons = 3
+        # num_beacons = 1
+        num_beacons_at_the_time = 1
         est_ranges = np.zeros(num_beacons)
         measured_ranges = np.zeros(num_beacons)
-        delta_P = np.zeros(num_beacons)
+        v = np.zeros(num_beacons)
+        # delta_P = np.zeros(num_beacons)
         
         pos_est = x_nominal[POS_IDX]  
         pos_meas = z_GNSS_position
         
+        # delta_x = np.zeros((15,))
         #ranges/LOS vectors
-        for i in range(num_beacons):
-            est_ranges[i] = np.array(
-                [la.norm(-pos_est + b_loc[i])]
-                )
-            measured_ranges[i] = np.array(
-                [la.norm(-pos_meas + b_loc[i])]
-                )
-                        
+
         #Pseudorange measurement residual
-        v = measured_ranges - est_ranges
-
+        # v = measured_ranges - est_ranges
+        # print("delta_P: ", delta_P)
+        
         #Geometry matrix consisting of normalized LOS-vectors
-        H = np.zeros((num_beacons, 15))
-        for k in range(num_beacons):
-            for j in range(3):
-                # print(j)
-                # print("Range for this beacon: ", ranges[k])
-                
-                H[k,j] = (b_loc[k,j] - pos_est[j])#/ranges[k]
-            # print("H[k]: ", H[k])
-            # print(H)
-            H[k] = -(H[k])/est_ranges[k]
-
-        # if (Use_UDU):
-        #     # print("Using UDU")
-        #     U, D = UDU_factorization(P,rtol,atol)
+        z = 0
+        z_hat = 0
+        H = np.zeros((1,15))
+        KeyboardInterrupt = np.zeros((15,1))
+        # H = {}
+        delta_x = np.zeros((15,1))
+        pos_est = np.reshape(pos_est,((1,3)))
+        for i in range(num_beacons):
+            # H[i,:] er feil shape, reshape til 1x15 før multiplisering
+            # Ide: Er det vits å bruke H som matrise og lagre de gamle H-ene? Nei.
             
-        #     S = H @ U @ D @ U.T @ H.T + R_beacons[:num_beacons, :num_beacons] #R_GNSS
-        #     # print(S.shape)
-        #     W = U @ D @ U.T @ H.T @ la.inv(S)
-        #     # print(W,W.shape)
-        #     delta_x = W @ v
-        #     Jo = I - W @ H  # for Joseph form
-        #     # Update the error covariance
+            # Denne trengs ikkje å reshapes. Siden resultatet er skalart, så vil norm 3x1, 3x1 = norm 1x3, 1x3
+            # z_hat_temp = la.norm(np.reshape(pos_est,((3,1))) - np.reshape(b_loc[i,:],((3,1)))) # norm of 3x1 - 3x1 = R1x1
+            z_hat_temp = la.norm(pos_est -b_loc[i,:]) # norm of 3x1 - 3x1 = R1x1
+           
+            #Ønsker at H[i] skal være R1x15.- pos_est og b_loc er R1x3
+            H[:,:3] = ((pos_est - b_loc[i,:]) / z_hat_temp)
 
-        #     P_update = Jo @ U @ D @ U.T @ Jo.T + W @ R_beacons[:num_beacons, :num_beacons] @ W.T
-
-
-        # elif(Use_LU):
-        #     return False #TODO
-
-        # elif(Use_QR):
-        #     return False #TODO
+            #Skal være R1x1 #delta_x må bli skalar, H = R1x15, delta_x = 15x1
+            z_hat = la.norm(pos_est - b_loc[i,:]) + H @ delta_x
+            #z skal være R1x1
+            z = la.norm(pos_meas - (b_loc[i,:]))
             
-        # else:
-            # print("Not factorizing")
-            S = H @ P @ H.T + R_beacons[:num_beacons, :num_beacons] #R_GNSS
-            W = P @ H.T @ la.inv(S)
-            # print(W,W.shape)
-            delta_x = W @ v
-            Jo = I - W @ H  # for Joseph form
-            # Update the error covariance
 
-            P_update = Jo @ P @ Jo.T + W @ R_beacons[:num_beacons, :num_beacons] @ W.T
+            S = H @ P @ H.T + R_beacons[i,i]  #Skal være R1x1
+            #Skal være R15x1
+            # K = np.reshape(P @ H[i].T / S,((15,1)))
+            K = P @ H.T / S
+            
+            #R15x1
+            delta_x = delta_x + K*(z-z_hat)
+            # print("z-z_hat = ", z-z_hat)
+            # print("K =", K)
+            # print("z-z_hat =", z-z_hat) #Dette blir null fordi det er perfekte GNSS-målinger i forhold til x_true?
+            # print("delta_x = ", delta_x) #Problemet er jo da at alle satelitter gir perfekte resultater, og gainen gjør 
+            #                             #ingenting for korreksjon
+            # print("delta_x = ", delta_x)
+            # K = K.reshape(15,1) 
 
+            P_Jo = I - K * H
+            # print ("H = ", H)
+            # print ("K*H", K*H)
+            # print("K@H", K@H)
+            #Using the symmetric and positive Joseph form
+            P_update = P_Jo @ P @ P_Jo.T + K * R_beacons[i,i] * K.T 
+        
+        
+        #Sjekk i injiseringen om det er gjort phi*p*phi pluss Qd der og P = (P+P')/2
+        #To be injected 
+        delta_x = delta_x
         # print("Delta_x = ", delta_x)
+    
         return delta_x, P_update
-    
-    
+
     @classmethod 
     def delta_x(cls,
                 x_nominal: np.ndarray,
@@ -860,3 +887,4 @@ class ESKF_batch:
             15,), f"ESKF.delta_x: d_x shape incorrect {d_x.shape}"
 
         return d_x
+# %%
