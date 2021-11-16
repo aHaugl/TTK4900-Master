@@ -47,7 +47,7 @@ ERR_ACC_BIAS_IDX = CatSlice(start=9, stop=12)
 ERR_GYRO_BIAS_IDX = CatSlice(start=12, stop=15)
 
 @dataclass
-class ESKF_UDU:
+class ESKF_udu:
     sigma_acc: float #acc_std
     sigma_gyro: float #rate_std
 
@@ -364,12 +364,12 @@ class ESKF_UDU:
         assert Phid.shape == (
             15,
             15,
-            ), f"ESKF.discrete_error_matrices: Ad-matrix shape incorrect {Ad.shape}"
+            ), f"ESKF.discrete_error_matrices: Phid-matrix shape incorrect {Phid.shape}"
         assert GQGd.shape == (
             15,
             15,
             ), f"ESKF.discrete_error_matrices: GQGd-matrix shape incorrect {GQGd.shape}"
-        
+
         return Phid, GQGd
     
     def predict_covariance(
@@ -412,7 +412,6 @@ class ESKF_UDU:
             3,
             ), f"ESKF.predict_covariance: omega shape inncorrect {omega.shape}"
         
-
         if (use_UDU):
             #Can change from VanLoan here to something else
             #Compute discrete time linearized error state transition and covariance matrix
@@ -425,12 +424,19 @@ class ESKF_UDU:
             
             U, D = UDU_factorization(P,rtol,atol)
             # U_barD_barU_bar.T = P_predicted
-            D_tilde = np.block([[D, np.zeros_like(GQGd)],
-                      [np.zeros_like(D), GQGd]])
+            
             Y = np.block([Phid @ U, np.eye(np.shape(Phid)[0])]) 
+            #Goal is to find T s.t Y@la.inv(T) = np.block([U_bar, 0_nxm]) +
+            #1) Define D_tilde
+            #Alternativ så skal det være kun Q her også
+            D_tilde = np.block([[D, np.zeros_like(GQGd)],
+            [np.zeros_like(D), GQGd]])
+            
+            U_bar, D_bar = mod_gram_NASA(Y, D_tilde)
+            
+            
             
             P_predicted = Phid @ U @ D @ U.T @ Phid.T + GQGd
-            
             
         else:
             #Compute discrete time linearized error state transition and covariance matrix

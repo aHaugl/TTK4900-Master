@@ -39,7 +39,7 @@ from utils import UDU_factorization
 
 from eskf_batch import ESKF_batch
 from eskf_sequential import ESKF_sequential
-from eskf_UDU import ESKF_UDU
+from eskf_UDU import ESKF_udu
 from eskf_runner import run_batch_eskf, run_sequential_eskf, run_UDU_eskf
 from plotter import * #plot_error_v_sigma, plot_pos, plot_vel, plot_angle, plot_estimate, plot_3Dpath, plot_path, state_error_plots, plot_NEES, plot_NIS
 # from timer import * 
@@ -221,11 +221,11 @@ Running the simulation
 """
 beacon_location: np.ndarray = loaded_data["beacon_location"]
 
-use_batch_pseudoranges: bool = True
-# # use_batch_pseudoranges: bool = False
-use_sequential_pseudoranges: bool = True
-# use_sequential_pseudoranges: bool = False
-use_UDU: bool = False
+# use_batch_pseudoranges: bool = True
+use_batch_pseudoranges: bool = False
+# use_sequential_pseudoranges: bool = True
+use_sequential_pseudoranges: bool = False
+use_UDU: bool = True
 
 
 
@@ -266,7 +266,7 @@ print("Number of beacons used: ", num_beacons)
 print("Number of simulations ran through", num_sims)
 print("Simulation duration (seconds): ", N*dt) 
 
-
+Use_UDU = False
 # %%
 if (use_batch_pseudoranges):
     
@@ -289,8 +289,6 @@ if (use_batch_pseudoranges):
                             rtol,
                             atol,
                             Use_UDU,
-                            Use_QR,
-                            Use_LU,
                             eskf_parameters,
                             x_pred_init, P_pred_init, p_std, 
                             num_beacons,
@@ -339,8 +337,6 @@ if (use_sequential_pseudoranges):
                             rtol,
                             atol,
                             Use_UDU,
-                            Use_QR,
-                            Use_LU,
                             eskf_parameters,
                             x_pred_init, P_pred_init, p_std, 
                             num_beacons,
@@ -374,13 +370,11 @@ if (use_UDU):
         pred_timer,
         elapsed_pred_timer_UDU,
         elapsed_est_timer_UDU
-        ) = run_batch_eskf (
+        ) = run_UDU_eskf (
                             N, loaded_data,
                             rtol,
                             atol,
                             Use_UDU,
-                            Use_QR,
-                            Use_LU,
                             eskf_parameters,
                             x_pred_init, P_pred_init, p_std, 
                             num_beacons,

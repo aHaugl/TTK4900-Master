@@ -425,6 +425,7 @@ class ESKF_batch:
             Ts)
         # print("GQGd from predict_covariance: ", GQGd)
         
+        
         P_predicted = Phid @ P @ Phid.T + GQGd
         
         # print(P_predicted[ERR_ATT_IDX,ERR_ATT_IDX])

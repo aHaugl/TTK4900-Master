@@ -37,6 +37,19 @@ from eskf_sequential import (
     ERR_GYRO_BIAS_IDX,
 )
 
+from eskf_UDU import (
+# from eskf import (    
+    ESKF_udu,
+    POS_IDX,
+    VEL_IDX,
+    ATT_IDX,
+    ACC_BIAS_IDX,
+    GYRO_BIAS_IDX,
+    ERR_ATT_IDX,
+    ERR_ACC_BIAS_IDX,
+    ERR_GYRO_BIAS_IDX,
+)
+
 from IMU import z_acc, z_gyro
 
 
@@ -45,8 +58,6 @@ def run_batch_eskf(
                 rtol,
                 atol,
                 Use_UDU,
-                Use_QR,
-                Use_LU,
                 eskf_parameters,
                 x_pred_init, P_pred_init, p_std, 
                 num_beacons,
@@ -186,8 +197,6 @@ def run_batch_eskf(
                                         rtol,
                                         atol,
                                         Use_UDU,
-                                        Use_QR,
-                                        Use_LU,
                                         x_pred[k],
                                         P_pred[k],
                                         z_GNSS[GNSSk],
@@ -425,7 +434,7 @@ def run_UDU_eskf(
                     N, loaded_data,
                     rtol,
                     atol,
-                    Use_UDU,
+                    use_UDU,
                     eskf_parameters,
                     x_pred_init, P_pred_init, p_std, 
                     num_beacons,
@@ -511,7 +520,7 @@ def run_UDU_eskf(
     
         #Initialize the kalman filter
     print("Initializing kalman filter")
-    eskf = ESKF_UDU(
+    eskf = ESKF_udu(
         *eskf_parameters,
         S_a=S_a,  # set the accelerometer correction matrix
         S_g=S_g,  # set the gyro correction matrix,
@@ -557,8 +566,6 @@ def run_UDU_eskf(
                                         rtol,
                                         atol,
                                         Use_UDU,
-                                        Use_QR,
-                                        Use_LU,
                                         x_pred[k],
                                         P_pred[k],
                                         z_GNSS[GNSSk],
@@ -589,7 +596,8 @@ def run_UDU_eskf(
                                             # acc_t[k],
                                             z_acc[k], #Denne er k pga måten dataen er laget på (?)
                                             z_gyro[k+1],
-                                            Ts_IMU[k]
+                                            Ts_IMU[k],
+                                            use_UDU
                                              )
             elapsed_pred_timer[k] = time.time() - pred_timer[k]
             

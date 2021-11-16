@@ -105,29 +105,64 @@ def mod_gram_schmidt(A):
     R = np.zeros((n,n))
     
     for i in range(n):
-        v = np.reshape(A[:,i],((3,1)))
+        v = np.reshape(A[:,i],((n,1)))
 
         for j in range(i):
-            R[j,i] = (np.reshape(Q[:,j],((3,1)))).T @ v
-            v = (v)-R[j,i] * np.reshape(Q[:,j],((3,1)))
+            R[j,i] = (np.reshape(Q[:,j],((n,1)))).T @ v
+            v = (v)-R[j,i] * np.reshape(Q[:,j],((n,1)))
         
         R[i,i] = np.linalg.norm(v)
         
         Q[:,i] = (v / R[i,i]).T
         
-    return Q,R
-        
+    return Q, R
 
-# function [Q,R]=mgs(A)
-# [m,n]=size(A);
-# V=A;
-# Q=zeros(m,n);
-# R=zeros(n,n);
-# for i=1:n
-#   R(i,i)=norm(V(:,i));
-#   Q(:,i)=V(:,i)/R(i,i);
-#   for j=i+1:n
-#     R(i,j)=Q(:,i)'*V(:,j);
-#     V(:,j)=V(:,j)-R(i,j)*Q(:,i);
-#   end
-# end
+def mod_gram_NASA(Y, D_tilde):
+    
+    (n, m) = np.shape(Y)
+    b = np.zeros((n, m))
+    
+    D_bar = np.zeros((n,n))
+    U_bar = np.zeros((n,n))
+    
+    #Fra siste element til det 2. elementet
+    for k in range(n-1, 1):
+        #b_k is a col vector, should be dim (n+m)x1 
+        b[:,k] = Y[:,k]
+    
+    #Fra siste element til det 2. elementet
+    for j in range(n-1, 1):
+        #Kan hende f_j må endres til ei matrise med og hente ut kolonner etter behov.
+        f_j = D_tilde @ b[:,j]
+        D_bar[j,j] = b.T@f_j
+        f_j = f_j / D_bar
+        
+        #Fra det 1. elementet til j-1. element
+        for i in range(0, j-1):
+            U_bar[i,j] = b[:,k] @ f_j
+            b[:,i] = b[:,i] - U_bar[i,j] @ b[:,j]       
+    
+    U_bar[0,0] = 1
+    f_1 = D_tilde @b[:,0]
+    D_bar[0,0] = b[:,0].T@ f_1
+     
+    print(U_bar, D_bar, b, f_j)
+    return 0
+        
+    # return U_bar, D_bar
+    
+def create_random_cov_matrix(n):
+    """[summary]
+
+    Args:
+        n ([int]): [Dimentions of matrix]
+
+    Returns:
+        [np.array]: [Random positive definite, symmetric matrix illustrating a cov matrix]
+    """
+
+    matrixSize = n 
+    A = np.random.rand(matrixSize, matrixSize)
+    B = np.dot(A, A.transpose())
+    return B
+# %%
