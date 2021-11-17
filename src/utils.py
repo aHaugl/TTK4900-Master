@@ -1,5 +1,6 @@
 import numpy as np
 from mytypes import ArrayLike
+from cat_slice import CatSlice
 
 # %%
 def cross_product_matrix(n: ArrayLike, debug: bool = True) -> np.ndarray:
@@ -80,15 +81,15 @@ def UDU_factorization(P: np.ndarray, rtol, atol):
 
     D = np.diag(d)
 
-    # assert U.shape == (
-    #         15,
-    #         15,
-    #     ), f"utils.UDU-factorization: U shape incorrect {U.shape}"
-    # assert D.shape == (
-    #         15,
-    #         15,
-    #     ), f"utils.UDU-factorization: D shape incorrect {D.shape}"
-
+    assert U.shape == (
+            15,
+            15,
+        ), f"utils.UDU-factorization: U shape incorrect {U.shape}"
+    assert D.shape == (
+            15,
+            15,
+        ), f"utils.UDU-factorization: D shape incorrect {D.shape}"
+    
     assert np.allclose(P-U@D@U.T, 0, rtol=rtol, atol=atol) == True, f"utils.UDU-factorization: Factorization failed. P-U@D@U.T not close zero."
     return U, D
 
@@ -117,37 +118,57 @@ def mod_gram_schmidt(A):
         
     return Q, R
 
-def mod_gram_NASA(Y, D_tilde):
+def mod_gram_NASA1(Y, D_tilde):
     
     (n, m) = np.shape(Y)
     b = np.zeros((n, m))
+    f = np.zeros((n, m))
+    # b = np.zeros((m, n))
+    # f = np.zeros((m, n))
     
     D_bar = np.zeros((n,n))
     U_bar = np.zeros((n,n))
+    print("n = ", n)
+    print("m = ", m)
+    
+    # print("Y =", Y)
+    # print("D_tilde = ", D_tilde)
     
     #Fra siste element til det 2. elementet
-    for k in range(n-1, 1):
-        #b_k is a col vector, should be dim (n+m)x1 
-        b[:,k] = Y[:,k]
+    for k in range(n-1, -1,-1):
+        # print("k = ", k)
+        #Copy the row Y[k] into b[k]. This can be done more efficient and does not need to be its own loop
+        b[k,:] = Y[k,:] 
     
     #Fra siste element til det 2. elementet
-    for j in range(n-1, 1):
-        #Kan hende f_j må endres til ei matrise med og hente ut kolonner etter behov.
-        f_j = D_tilde @ b[:,j]
-        D_bar[j,j] = b.T@f_j
-        f_j = f_j / D_bar
+    for j in range(n-1, 0,-1):
+        # print("j = ", j)
+        #Set the diagonal of U_bar to be 0, with the exception of U[0,0]
+        U_bar[j,j] = 1
+        # print("U_bar[j,j] set")
+    # assert np.allclose(b-Y,0) == True, f"error in MGS Nasa"
         
+        f[j,:] = D_tilde @ b[j,:] #30x30 @ 30x1 = 30x1
+        # print("f[j,:] set")
+        D_bar[j,j] = b[j,:].T @ f[j,:] #30x1 @ 30x1 = 1x1
+        print("D_bar[j,j]", D_bar[j,j])
+        # print("D_bar[j,j] set 2nd time")
+        f[j,:] = f[j,:] / D_bar[j,j]
+        # print("f[j,:] set")
+                
         #Fra det 1. elementet til j-1. element
         for i in range(0, j-1):
-            U_bar[i,j] = b[:,k] @ f_j
-            b[:,i] = b[:,i] - U_bar[i,j] @ b[:,j]       
-    
+            # print("i = ", i)
+           
+            U_bar[i,j] = b[k,:] @ f[j,:]
+            # print("U_bar[i,j] set")
+            b[i,:] = b[i,:] - U_bar[i,j] * b[j,:]     
+            # print("b[i,:] set") 
+             
     U_bar[0,0] = 1
-    f_1 = D_tilde @b[:,0]
-    D_bar[0,0] = b[:,0].T@ f_1
-     
-    print(U_bar, D_bar, b, f_j)
-    return 0
+    f[0,:] = D_tilde @ b[0,:]
+    D_bar[0,0] = b[0,:] @ f[0,:]
+    return U_bar, D_bar
         
     # return U_bar, D_bar
     
@@ -165,4 +186,33 @@ def create_random_cov_matrix(n):
     A = np.random.rand(matrixSize, matrixSize)
     B = np.dot(A, A.transpose())
     return B
-# %%
+
+
+def check_upper_triangular(A):
+    flag = 0
+    for i in range(1, n):
+        for j in range(0, i):
+            if (A[i][j] != 0):
+                flag = 0
+            else:
+                flag = 1
+
+    if (flag == 1):
+        print("Input matrix is Upper Triangular Matrix")
+    else:
+        print("Input matrix is not an Upper Triangular Matrix")
+
+def check_if_diagonal_matrix(A):
+    """[summary]
+    Removes the diagonal of an input matrix and counts all non-zero elements.
+    Returns 0 if the matrix is diagonal
+    Args:
+        A ([np.ndarray([][])]): [Input matrix]
+
+    Returns:
+        [int]: [Number of nonzero elements]
+    """
+    nonzero_elems = np.count_nonzero(A - np.diag(np.diagonal(A)))
+    print("Number of nonzero elements not including the diagonal is: ", nonzero_elems)
+    return nonzero_elems
+

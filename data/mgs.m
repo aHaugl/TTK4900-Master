@@ -12,7 +12,7 @@ for i = 1:m
         R(j,i) = Q(:,j)'*v;
 %         Q(:,j)
 %         Q(:,j)'
-        v = v-R(j,i)*Q(:,j);
+        v = v - R(j,i)*Q(:,j);
 %         v
     end
     R(i,i) = norm(v);

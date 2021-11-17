@@ -32,7 +32,7 @@ from quaternion import (
 
 
 # from state import NominalIndex, ErrorIndex
-from utils import cross_product_matrix, UDU_factorization, mod_gram_schmidt
+from utils import cross_product_matrix, UDU_factorization, mod_gram_NASA
 
 from timer import*
 
