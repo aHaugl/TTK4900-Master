@@ -30,7 +30,7 @@ from quaternion import (
 
 
 # from state import NominalIndex, ErrorIndex
-from utils import cross_product_matrix, UDU_factorization
+from utils import cross_product_matrix
 
 # from timer import*
 
@@ -48,10 +48,6 @@ ERR_GYRO_BIAS_IDX = CatSlice(start=12, stop=15)
 class ESKF_batch:
     # rtol: float
     # atol: float
-
-    # Use_UDU: bool
-    # Use_QR: bool
-    # Use_LU: bool
 
     sigma_acc: float #acc_std
     sigma_gyro: float #rate_std
@@ -622,9 +618,6 @@ class ESKF_batch:
         self,
         rtol:float,
         atol:float,
-        Use_UDU:bool,
-        Use_QR:bool,
-        Use_LU:bool,
         x_nominal: np.ndarray,
         P: np.ndarray,
         z_GNSS_position: np.ndarray,
@@ -680,10 +673,7 @@ class ESKF_batch:
                                                 P,
                                                 R_GNSS,
                                                 beacon_location,
-                                                R_beacons,
-                                                Use_UDU,
-                                                Use_QR,
-                                                Use_LU
+                                                R_beacons
                                                 ) 
         # Error state injection
         x_injected, P_injected = self.inject(x_nominal, delta_x, P_update)
@@ -709,10 +699,6 @@ class ESKF_batch:
                     R_GNSS:np.ndarray,
                     b_loc: np.ndarray,
                     R_beacons: np.ndarray,
-                    Use_UDU: bool,
-                    Use_QR: bool,
-                    Use_LU: bool
-
                     ) -> np.ndarray:
     
         """
@@ -761,28 +747,6 @@ class ESKF_batch:
             # print(H)
             H[k] = -(H[k])/est_ranges[k]
 
-        # if (Use_UDU):
-        #     # print("Using UDU")
-        #     U, D = UDU_factorization(P,rtol,atol)
-            
-        #     S = H @ U @ D @ U.T @ H.T + R_beacons[:num_beacons, :num_beacons] #R_GNSS
-        #     # print(S.shape)
-        #     W = U @ D @ U.T @ H.T @ la.inv(S)
-        #     # print(W,W.shape)
-        #     delta_x = W @ v
-        #     Jo = I - W @ H  # for Joseph form
-        #     # Update the error covariance
-
-        #     P_update = Jo @ U @ D @ U.T @ Jo.T + W @ R_beacons[:num_beacons, :num_beacons] @ W.T
-
-
-        # elif(Use_LU):
-        #     return False #TODO
-
-        # elif(Use_QR):
-        #     return False #TODO
-            
-        # else:
             # print("Not factorizing")
             S = H @ P @ H.T + R_beacons[:num_beacons, :num_beacons] #R_GNSS
             W = P @ H.T @ la.inv(S)

@@ -617,9 +617,6 @@ class ESKF_sequential:
         self,
         rtol:float,
         atol:float,
-        Use_UDU:bool,
-        Use_QR:bool,
-        Use_LU:bool,
         x_nominal: np.ndarray,
         P: np.ndarray,
         z_GNSS_position: np.ndarray,
@@ -676,9 +673,6 @@ class ESKF_sequential:
                                         R_GNSS,
                                         beacon_location,
                                         R_beacons,
-                                        Use_UDU,
-                                        Use_QR,
-                                        Use_LU
                                         ) 
         
         x_injected, P_injected = self.inject(x_nominal, delta_x, P_update)
@@ -705,9 +699,6 @@ class ESKF_sequential:
                     R_GNSS:np.ndarray,
                     b_loc: np.ndarray,
                     R_beacons: np.ndarray,
-                    Use_UDU: bool,
-                    Use_QR: bool,
-                    Use_LU: bool
                     ) -> np.ndarray:
         
         """
@@ -745,8 +736,6 @@ class ESKF_sequential:
         z = 0
         z_hat = 0
         H = np.zeros((1,15))
-        KeyboardInterrupt = np.zeros((15,1))
-        # H = {}
         delta_x = np.zeros((15,1))
         pos_est = np.reshape(pos_est,((1,3)))
         for i in range(num_beacons):

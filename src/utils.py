@@ -118,61 +118,46 @@ def mod_gram_schmidt(A):
         
     return Q, R
 
-def mod_gram_NASA1(Y, D_tilde):
+def mod_gram_NASA(Y, D_tilde):
     
     (n, m) = np.shape(Y)
     b = np.zeros((n, m))
     f = np.zeros((n, m))
-    # b = np.zeros((m, n))
-    # f = np.zeros((m, n))
     
     D_bar = np.zeros((n,n))
     U_bar = np.zeros((n,n))
-    print("n = ", n)
-    print("m = ", m)
-    
-    # print("Y =", Y)
-    # print("D_tilde = ", D_tilde)
-    
+
     #Fra siste element til det 2. elementet
     # (k = n-1; j>-1, j--)
     for k in range(n-1, -1,-1):
-        # print("k = ", k)
         #Copy the row Y[k] into b[k]. This can be done more efficient and does not need to be its own loop
         b[k,:] = Y[k,:] 
     
     #Fra siste element til det 2. elementet
     #for (j = n-1; j>0, j--)
     for j in range(n-1, 0,-1):             
-        print("j = ", j)
+        # print("j = ", j)
         #Set the diagonal of U_bar to be 0, with the exception of U[0,0]
         U_bar[j,j] = 1
-        # print("U_bar[j,j] set")
-        
+
         f[j,:] = D_tilde @ b[j,:]                    #30x30 @ 30x1 = 30x1
-        # print("f[j,:] set")
+
         D_bar[j,j] = b[j,:].T @ f[j,:]               #1x30 @ 30x1 = 1x1
-        # print("D_bar[j,j]", D_bar[j,j])
-        # print("D_bar[j,j] set 2nd time")
+
         f[j,:] = f[j,:] / D_bar[j,j]                 #30x1 / 1x1 = 30x1
-        # print("f[j,:] set")
-                
+ 
         #Fra det 1. elementet til j-1. element
         #for (i = 0; i >j0, i++)
         for i in range(0, j):
-            print("i = ", i)
-           
+
             U_bar[i,j] = b[i,:].T @ f[j,:]            #1x30 @ 30x1 = 1x1
-            # print("U_bar[i,j] set")
             b[i,:] = b[i,:] - U_bar[i,j] * b[j,:]     #30x1 - 1x1*30x1 = 30x1
-            # print("b[i,:] set") 
              
     U_bar[0,0] = 1
     f[0,:] = D_tilde @ b[0,:]
     D_bar[0,0] = b[0,:] @ f[0,:]
     return U_bar, D_bar
-        
-    # return U_bar, D_bar
+
     
 def create_random_cov_matrix(n):
     """[summary]
