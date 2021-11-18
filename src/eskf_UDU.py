@@ -32,7 +32,7 @@ from quaternion import (
 
 
 # from state import NominalIndex, ErrorIndex
-from utils import cross_product_matrix, UDU_factorization, mod_gram_NASA
+from utils import cross_product_matrix, UDU_factorization, mod_gram_NASA1
 
 from timer import*
 
@@ -434,8 +434,6 @@ class ESKF_udu:
             
             U_bar, D_bar = mod_gram_NASA(Y, D_tilde)
             
-            
-            
             P_predicted = Phid @ U @ D @ U.T @ Phid.T + GQGd
             
         else:
@@ -526,7 +524,6 @@ class ESKF_udu:
         # print("ESKF.predict quaternion: ", x_nominal[ATT_IDX])
         x_nominal_predicted = self.predict_nominal(x_nominal,
                                                    acceleration,
-                        
                                                    omega,
                                                    Ts
                                                    )

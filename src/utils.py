@@ -57,10 +57,10 @@ def UDU_factorization(P: np.ndarray, rtol, atol):
             U, D np.ndarray: The upper triangular matrix U, and Diagonal matrix D
         """
 
-    # assert P.shape == (
-    #     15,
-    #     15,
-    # ), f"utils.UDU-factorization: P incorrect shape {P.shape}"
+    assert P.shape == (
+        15,
+        15,
+    ), f"utils.UDU-factorization: P incorrect shape {P.shape}"
     assert np.allclose(P, P.T, rtol=rtol, atol=atol) == True, f"utils.UDU-factorization: P Not symmetrical."
 
     n = len(P)
@@ -135,34 +135,36 @@ def mod_gram_NASA1(Y, D_tilde):
     # print("D_tilde = ", D_tilde)
     
     #Fra siste element til det 2. elementet
+    # (k = n-1; j>-1, j--)
     for k in range(n-1, -1,-1):
         # print("k = ", k)
         #Copy the row Y[k] into b[k]. This can be done more efficient and does not need to be its own loop
         b[k,:] = Y[k,:] 
     
     #Fra siste element til det 2. elementet
-    for j in range(n-1, 0,-1):
-        # print("j = ", j)
+    #for (j = n-1; j>0, j--)
+    for j in range(n-1, 0,-1):             
+        print("j = ", j)
         #Set the diagonal of U_bar to be 0, with the exception of U[0,0]
         U_bar[j,j] = 1
         # print("U_bar[j,j] set")
-    # assert np.allclose(b-Y,0) == True, f"error in MGS Nasa"
         
-        f[j,:] = D_tilde @ b[j,:] #30x30 @ 30x1 = 30x1
+        f[j,:] = D_tilde @ b[j,:]                    #30x30 @ 30x1 = 30x1
         # print("f[j,:] set")
-        D_bar[j,j] = b[j,:].T @ f[j,:] #30x1 @ 30x1 = 1x1
-        print("D_bar[j,j]", D_bar[j,j])
+        D_bar[j,j] = b[j,:].T @ f[j,:]               #1x30 @ 30x1 = 1x1
+        # print("D_bar[j,j]", D_bar[j,j])
         # print("D_bar[j,j] set 2nd time")
-        f[j,:] = f[j,:] / D_bar[j,j]
+        f[j,:] = f[j,:] / D_bar[j,j]                 #30x1 / 1x1 = 30x1
         # print("f[j,:] set")
                 
         #Fra det 1. elementet til j-1. element
-        for i in range(0, j-1):
-            # print("i = ", i)
+        #for (i = 0; i >j0, i++)
+        for i in range(0, j):
+            print("i = ", i)
            
-            U_bar[i,j] = b[k,:] @ f[j,:]
+            U_bar[i,j] = b[i,:].T @ f[j,:]            #1x30 @ 30x1 = 1x1
             # print("U_bar[i,j] set")
-            b[i,:] = b[i,:] - U_bar[i,j] * b[j,:]     
+            b[i,:] = b[i,:] - U_bar[i,j] * b[j,:]     #30x1 - 1x1*30x1 = 30x1
             # print("b[i,:] set") 
              
     U_bar[0,0] = 1
@@ -189,6 +191,7 @@ def create_random_cov_matrix(n):
 
 
 def check_upper_triangular(A):
+    n = np.shape(A)[0]
     flag = 0
     for i in range(1, n):
         for j in range(0, i):
