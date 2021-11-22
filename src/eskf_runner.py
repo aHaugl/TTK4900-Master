@@ -55,8 +55,6 @@ from IMU import z_acc, z_gyro
 
 def run_batch_eskf(
                 N, loaded_data,
-                rtol,
-                atol,
                 eskf_parameters,
                 x_pred_init, P_pred_init, p_std, 
                 num_beacons,
@@ -144,12 +142,6 @@ def run_batch_eskf(
         #Initialize the kalman filter
     print("Initializing kalman filter")
     eskf = ESKF_batch(
-        # rtol = rtol,
-        # atol =atol,
-        # Use_UDU = Use_UDU,
-        # Use_QR = Use_QR,
-        # Use_LU = Use_LU,
-
         *eskf_parameters,
         S_a=S_a,  # set the accelerometer correction matrix
         S_g=S_g,  # set the gyro correction matrix,
@@ -193,8 +185,6 @@ def run_batch_eskf(
             # the else steps 
             est_timer[GNSSk] = time.time()
             x_est[k], P_est[k] = eskf.update_GNSS_position(
-                                        rtol,
-                                        atol,
                                         x_pred[k],
                                         P_pred[k],
                                         z_GNSS[GNSSk],
@@ -247,8 +237,6 @@ def run_batch_eskf(
     
 def run_sequential_eskf(
                     N, loaded_data,
-                    rtol,
-                    atol,
                     eskf_parameters,
                     x_pred_init, P_pred_init, p_std, 
                     num_beacons,
@@ -377,8 +365,6 @@ def run_sequential_eskf(
             # %% Test if range and LOS_matrix works
             est_timer[GNSSk] = time.time()
             x_est[k], P_est[k] = eskf.update_GNSS_position(
-                                        rtol,
-                                        atol,
                                         x_pred[k],
                                         P_pred[k],
                                         z_GNSS[GNSSk],
@@ -424,8 +410,6 @@ def run_sequential_eskf(
 
 def run_UDU_eskf(
                     N, loaded_data,
-                    rtol,
-                    atol,
                     use_UDU,
                     eskf_parameters,
                     x_pred_init, P_pred_init, p_std, 
@@ -555,8 +539,6 @@ def run_UDU_eskf(
             # %% Test if range and LOS_matrix works
             est_timer[GNSSk] = time.time()
             x_est[k], P_est[k] = eskf.update_GNSS_position(
-                                        rtol,
-                                        atol,
                                         use_UDU,
                                         x_pred[k],
                                         P_pred[k],
@@ -581,8 +563,6 @@ def run_UDU_eskf(
         if k < N - 1:
             pred_timer[k] = time.time()
             x_pred[k+1], P_pred[k+1] = eskf.predict(
-                                            rtol,
-                                            atol,
                                             x_est[k],
                                             P_est[k],
                                             # acc_t[k],

@@ -46,9 +46,6 @@ ERR_GYRO_BIAS_IDX = CatSlice(start=12, stop=15)
 
 @dataclass
 class ESKF_batch:
-    # rtol: float
-    # atol: float
-
     sigma_acc: float #acc_std
     sigma_gyro: float #rate_std
 
@@ -616,8 +613,6 @@ class ESKF_batch:
 
     def update_GNSS_position(
         self,
-        rtol:float,
-        atol:float,
         x_nominal: np.ndarray,
         P: np.ndarray,
         z_GNSS_position: np.ndarray,
@@ -666,8 +661,6 @@ class ESKF_batch:
 
 
         delta_x, P_update = self.batch_pseudorange(
-                                                rtol,
-                                                atol,
                                                 x_nominal,
                                                 z_GNSS_position,
                                                 P,
@@ -689,8 +682,6 @@ class ESKF_batch:
         return x_injected, P_injected
   
     def batch_pseudorange(self,
-                    rtol,
-                    atol,
                     x_nominal: np.ndarray,
                     # x_true: np.ndarray,
                     z_GNSS_position: np.ndarray,

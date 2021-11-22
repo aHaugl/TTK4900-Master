@@ -615,8 +615,6 @@ class ESKF_sequential:
 
     def update_GNSS_position(
         self,
-        rtol:float,
-        atol:float,
         x_nominal: np.ndarray,
         P: np.ndarray,
         z_GNSS_position: np.ndarray,
@@ -665,8 +663,6 @@ class ESKF_sequential:
 
 
         delta_x, P_update = self.sequential_pseudorange(
-                                        rtol,
-                                        atol,
                                         x_nominal,
                                         z_GNSS_position,
                                         P,
@@ -689,8 +685,6 @@ class ESKF_sequential:
 
 
     def sequential_pseudorange(self,
-                    rtol,
-                    atol,
                     x_nominal: np.ndarray,
                     # x_true: np.ndarray,
                     z_GNSS_position: np.ndarray,
@@ -753,8 +747,7 @@ class ESKF_sequential:
             z_hat = la.norm(pos_est - b_loc[i,:]) + H @ delta_x
             #z skal være R1x1
             z = la.norm(pos_meas - (b_loc[i,:]))
-            
-
+           
             S = H @ P @ H.T + R_beacons[i,i]  #Skal være R1x1
             #Skal være R15x1
             # K = np.reshape(P @ H[i].T / S,((15,1)))
@@ -762,26 +755,17 @@ class ESKF_sequential:
             
             #R15x1
             delta_x = delta_x + K*(z-z_hat)
-            # print("z-z_hat = ", z-z_hat)
-            # print("K =", K)
-            # print("z-z_hat =", z-z_hat) #Dette blir null fordi det er perfekte GNSS-målinger i forhold til x_true?
-            # print("delta_x = ", delta_x) #Problemet er jo da at alle satelitter gir perfekte resultater, og gainen gjør 
-            #                             #ingenting for korreksjon
-            # print("delta_x = ", delta_x)
-            # K = K.reshape(15,1) 
 
             P_Jo = I - K * H
-            # print ("H = ", H)
-            # print ("K*H", K*H)
-            # print("K@H", K@H)
-            #Using the symmetric and positive Joseph form
-            P_update = P_Jo @ P @ P_Jo.T + K * R_beacons[i,i] * K.T 
-        
-        
+
+            #Using the symmetric and positive Joseph form to create a P for the next iteration
+            P = P_Jo @ P @ P_Jo.T + K * R_beacons[i,i] * K.T 
+            
         #Sjekk i injiseringen om det er gjort phi*p*phi pluss Qd der og P = (P+P')/2
         #To be injected 
         delta_x = delta_x
         # print("Delta_x = ", delta_x)
+        P_update = P
     
         return delta_x, P_update
 

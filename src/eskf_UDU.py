@@ -374,8 +374,6 @@ class ESKF_udu:
     
     def predict_covariance(
             self,
-            rtol,
-            atol,
             x_nominal: np.ndarray,
             P: np.ndarray,
             acceleration: np.ndarray,
@@ -422,7 +420,7 @@ class ESKF_udu:
             Ts)
 
         # UDU factorize P^+ to find U and D
-        U, D = UDU_factorization(P,rtol,atol)
+        U, D = UDU_factorization(P)
 
         # Define Y = [Phid U, I] eq 7.10 NASA w/modification from Simon
         Y = np.block([Phid @ U, np.eye(np.shape(Phid)[0])]) 
@@ -447,8 +445,6 @@ class ESKF_udu:
         return P_MGS
     
     def predict(self,
-                rtol,
-                atol,
                 x_nominal: np.ndarray,
                 P: np.ndarray,
                 z_acc: np.ndarray,
@@ -518,8 +514,7 @@ class ESKF_udu:
                                                    Ts
                                                    )
         
-        P_predicted = self.predict_covariance(rtol,
-                                              atol,
+        P_predicted = self.predict_covariance(
                                               x_nominal,
                                               P,
                                               acceleration,
@@ -635,8 +630,6 @@ class ESKF_udu:
 
     def update_GNSS_position(
         self,
-        rtol:float,
-        atol:float,
         Use_UDU:bool,
         x_nominal: np.ndarray,
         P: np.ndarray,
@@ -685,13 +678,10 @@ class ESKF_udu:
         ), f"ESKF.update_GNSS: lever_arm shape incorrect {lever_arm.shape}"
 
 
-        delta_x, P_update = self.sequential_pseudorange(
-                                        rtol,
-                                        atol,
+        delta_x, P_update = self.sequential_pseudorange_UDU(
                                         x_nominal,
                                         z_GNSS_position,
                                         P,
-                                        R_GNSS,
                                         beacon_location,
                                         R_beacons,
                                         ) 
@@ -710,8 +700,6 @@ class ESKF_udu:
 
 
     def sequential_pseudorange(self,
-                    rtol,
-                    atol,
                     x_nominal: np.ndarray,
                     # x_true: np.ndarray,
                     z_GNSS_position: np.ndarray,
@@ -757,7 +745,6 @@ class ESKF_udu:
         z = 0
         z_hat = 0
         H = np.zeros((1,15))
-
         delta_x = np.zeros((15,1))
         pos_est = np.reshape(pos_est,((1,3)))
         for i in range(num_beacons):
@@ -775,8 +762,7 @@ class ESKF_udu:
             z_hat = la.norm(pos_est - b_loc[i,:]) + H @ delta_x
             #z skal være R1x1
             z = la.norm(pos_meas - (b_loc[i,:]))
-            
-
+           
             S = H @ P @ H.T + R_beacons[i,i]  #Skal være R1x1
             #Skal være R15x1
             # K = np.reshape(P @ H[i].T / S,((15,1)))
@@ -784,125 +770,144 @@ class ESKF_udu:
             
             #R15x1
             delta_x = delta_x + K*(z-z_hat)
-            # print("z-z_hat = ", z-z_hat)
-            # print("K =", K)
-            # print("z-z_hat =", z-z_hat) #Dette blir null fordi det er perfekte GNSS-målinger i forhold til x_true?
-            # print("delta_x = ", delta_x) #Problemet er jo da at alle satelitter gir perfekte resultater, og gainen gjør 
-            #                             #ingenting for korreksjon
-            # print("delta_x = ", delta_x)
-            # K = K.reshape(15,1) 
 
             P_Jo = I - K * H
-            # print ("H = ", H)
-            # print ("K*H", K*H)
-            # print("K@H", K@H)
-            #Using the symmetric and positive Joseph form
-            P_update = P_Jo @ P @ P_Jo.T + K * R_beacons[i,i] * K.T 
-        
-        
+
+            #Using the symmetric and positive Joseph form to create a P for the next iteration
+            P = P_Jo @ P @ P_Jo.T + K * R_beacons[i,i] * K.T 
+            
         #Sjekk i injiseringen om det er gjort phi*p*phi pluss Qd der og P = (P+P')/2
         #To be injected 
         delta_x = delta_x
         # print("Delta_x = ", delta_x)
+        P_update = P
     
         return delta_x, P_update
     
     def sequential_pseudorange_UDU(self,
-                    rtol,
-                    atol,
                     x_nominal: np.ndarray,
                     # x_true: np.ndarray,
                     z_GNSS_position: np.ndarray,
-                    U_bar:np.ndarray,
-                    D_bar:np.ndarray,
+                    P: np.ndarray,
+                    # U_bar:np.ndarray,
+                    # D_bar:np.ndarray,
                     # S:np.ndarray, 
-                    R_GNSS:np.ndarray,
-                    b_loc: np.ndarray,
+                    beacon_location: np.ndarray,
                     R_beacons: np.ndarray,
                     ) -> np.ndarray:
         
         """
-        Generate pseudoranges and design matrix H whenever a GNSS measurement
-        is recieved (1Hz).
-        
-        Is used in the update step where the filter incorporates the predicted values and 
-        the information from the measurements to improve the estimated position errors.
-        
-        This is done in the functions Update_GNSS_position
+
+        Parameters
+        ----------
+        rtol, atol : int
+            Tolerance variables
+        x_nominal : np.ndarray
+            Nominal state to inject the error state deviation into, (16,).
+        z_GNSS_position : np.ndarray
+            Simulated GNSS measurements, (3,).
+        P     : np.ndarray
+            Apriori covariance propagation which we factorize (again..) to U, D to find the error state update,(15,15)
+        # U_bar : np.ndarray
+        #     Upper triangular covariance component matrix generated from Gram Schmidt cov. propagation (15,15).
+        # D_bar : np.ndarray
+        #    Diagonal covariance component matrix generated from Gram Schmidt cov. propagation (15,15).
+        b_loc : np.ndarray
+            Beacon locations (3,m).
+        R_Beacons : np.ndarray
+            Simulated measurement noise matrix for beacon measurements (15,15).
+
+        Returns
+        ----------
+        delta_x: np.ndarray
+            Error state to be injected
+        P_update_UDU: np.ndarray
+            Posteriori error state covariance to be injected computed through sequential UDU update
+
+
         """
-        #tic()
-        
+        # #tic()
+        # n = np.shape(U_bar)[0]
+        # I = np.eye(*U_bar.shape)
+        n = np.shape(P)[0]
         I = np.eye(*P.shape)
         
-        num_beacons = len(b_loc)
-        # num_beacons = 1
+
+               
+        num_beacons = len(beacon_location)
         num_beacons_at_the_time = 1
+        b_loc = beacon_location
+        
         est_ranges = np.zeros(num_beacons)
         measured_ranges = np.zeros(num_beacons)
         v = np.zeros(num_beacons)
-        # delta_P = np.zeros(num_beacons)
         
         pos_est = x_nominal[POS_IDX]  
         pos_meas = z_GNSS_position
-        
-        # delta_x = np.zeros((15,))
-        #ranges/LOS vectors
-
-        #Pseudorange measurement residual
-        # v = measured_ranges - est_ranges
-        # print("delta_P: ", delta_P)
         
         #Geometry matrix consisting of normalized LOS-vectors
         z = 0
         z_hat = 0
         H = np.zeros((1,15))
-
         delta_x = np.zeros((15,1))
         pos_est = np.reshape(pos_est,((1,3)))
-        for i in range(num_beacons):
-            # H[i,:] er feil shape, reshape til 1x15 før multiplisering
-            # Ide: Er det vits å bruke H som matrise og lagre de gamle H-ene? Nei.
-            
-            # Denne trengs ikkje å reshapes. Siden resultatet er skalart, så vil norm 3x1, 3x1 = norm 1x3, 1x3
-            # z_hat_temp = la.norm(np.reshape(pos_est,((3,1))) - np.reshape(b_loc[i,:],((3,1)))) # norm of 3x1 - 3x1 = R1x1
-            z_hat_temp = la.norm(pos_est -b_loc[i,:]) # norm of 3x1 - 3x1 = R1x1
-           
-            #Ønsker at H[i] skal være R1x15.- pos_est og b_loc er R1x3
-            H[:,:3] = ((pos_est - b_loc[i,:]) / z_hat_temp)
+       
+       #Declaration of Neil Carlson Agee-Turner update
+        # K_bar = np.zeros(15)
+        # alpha_vector = np.zeros(15)
+        # lambda_vector = np.zeros(15)
+        # D = np.zeros((15,15))
+        # U = np.zeros((15,15))
+        
+        
+        #1) Split P^- into U^- and D^-, or U_bar, D_bar which is the notation in NASA
+        
 
+        for i in range(num_beacons):
+
+            z_hat_temp = la.norm(pos_est -b_loc[i,:])                                       # norm of 3x1 - 3x1 = R1x1
+           
+            #Ønsker at H[i] skal være 1x15.
+            H[:,:3] = ((pos_est - b_loc[i,:]) / z_hat_temp)                                  #H[i] = ith row of H
+            
+            # Simon UD measurement update p.176
+            # 1) Beregn S, eller alpha_i
+            # S = H @ (U_bar @ D_bar @ U_bar.T) @ H.T + R_beacons[i,i]      
+            S = H @ P @ H.T + R_beacons[i,i]   #1x1
+            # 2 Perform a U-D factorization of the prior covariance to obtain Ui-1, Di-1
+            U_bar, D_bar = UDU_factorization(P)
+            # 3) Beregn U_tilde, D_tilde, mao right side of eq 6.120 Simon (kalt med bar. NASA bruker tilde)
+            P_tilde = D_bar - 1/ S * (D_bar @ U_bar.T @ H.T)@(D_bar @ U_bar.T @H.T).T     #15x15
+            # 4) Find the UD factorization of P_tilde
+            U_tilde, D_tilde = UDU_factorization(P_tilde)
+            
+            # 5) Compute U_i and D_i, aka U and D from 6.122
+            U = U_bar@U_tilde
+            D = D_tilde
+            
+            # 6) compute the gain in U and D form
+            K = U @ D @ U.T @ H.T / S  
+            
+            # 7) Compute the Joseph form
+            P_Jo = I - K * H
+
+            # 8) Compute the posterior covariance for this step(?)
+            P = U @ D @ U.T              
+            
+            #######################################
+            # This is delta_x stuff
             #Skal være R1x1 #delta_x må bli skalar, H = R1x15, delta_x = 15x1
             z_hat = la.norm(pos_est - b_loc[i,:]) + H @ delta_x
             #z skal være R1x1
             z = la.norm(pos_meas - (b_loc[i,:]))
             
-
-            S = H @ P @ H.T + R_beacons[i,i]  #Skal være R1x1
-            #Skal være R15x1
-            # K = np.reshape(P @ H[i].T / S,((15,1)))
-            K = P @ H.T / S
-            
             #R15x1
             delta_x = delta_x + K*(z-z_hat)
-            # print("z-z_hat = ", z-z_hat)
-            # print("K =", K)
-            # print("z-z_hat =", z-z_hat) #Dette blir null fordi det er perfekte GNSS-målinger i forhold til x_true?
-            # print("delta_x = ", delta_x) #Problemet er jo da at alle satelitter gir perfekte resultater, og gainen gjør 
-            #                             #ingenting for korreksjon
-            # print("delta_x = ", delta_x)
-            # K = K.reshape(15,1) 
 
-            P_Jo = I - K * H
-            # print ("H = ", H)
-            # print ("K*H", K*H)
-            # print("K@H", K@H)
-            #Using the symmetric and positive Joseph form
-            P_update = P_Jo @ P @ P_Jo.T + K * R_beacons[i,i] * K.T 
-        
-        
-        #Sjekk i injiseringen om det er gjort phi*p*phi pluss Qd der og P = (P+P')/2
         #To be injected 
         delta_x = delta_x
         # print("Delta_x = ", delta_x)
+        P_update = P
     
         return delta_x, P_update
 
@@ -970,3 +975,17 @@ class ESKF_udu:
 
         return d_x
 # %%
+            # # Neil Carlson Agee-Turner update:
+            # f = U_bar @ H.T             # f = nx1
+            # v = D_bar @ f               # v = nx1
+            # K_bar[0] = v[0]             # K = nx1
+            # alpha_vector[0] = R_beacons[i,i] + v[0]*f[0]
+            # D[0,0] = (R_beacons[i,i]/alpha_vector[0]) * D_bar[0,0]
+            
+            # for j in range (1, n):
+            #     alpha_vector[j] = alpha_vector[j-1] + v[j]*f[j]
+            #     D[j,j] = (alpha_vector[j-1])/alpha_vector[j] * D_bar[j,j]
+            #     lambda_vector[j] = -(f[j] / alpha_vector[j-1])
+                
+            #     #Set the entire column or row? j to be equal to Or just element?
+            #     U[j,:] = U_bar[j,:] + lambda_vector[j] * K_bar[j-1]
