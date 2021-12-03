@@ -297,9 +297,14 @@ if (use_batch_pseudoranges):
         total_elapsed_est_timer_batch[i] = np.sum(elapsed_est_timer_batch)
 
 
-    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-    
+    #Plot the latest run and save figures
+    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'batch', 'path_batch',x_true)
+    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'batch', 'path3d_batch',x_true)
+    plot_error_pos_sigma(x_est, x_true, P_est, N, 'batch', 'error_pos_sigma')
+    plot_error_vel_sigma(x_est, x_true, P_est, N, 'batch', 'error_vel_sigma')
+    plot_error_att_sigma(x_est, x_true, P_est, N, 'batch', 'error_att_sigma')
+    plot_error_acc_bias_sigma(x_est, x_true, P_est, N, 'batch', 'error_acc_bias_sigma')  
+    plot_error_rate_bias_sigma(x_est, x_true, P_est, N, 'batch', 'error_rate_bias_sigma')
     # Batch timings
 
     print("\nEllapsed time for batch: ", elapsed_batch)
@@ -344,10 +349,16 @@ if (use_sequential_pseudoranges):
         #Summed up time used in estimation steps
         total_elapsed_est_timer_sequential[i] = np.sum(elapsed_est_timer_sequential)
 
-    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+    #Plot the latest run and save figures
+    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'sequential', 'path_seq', x_true)
+    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'sequential', 'path3d_seq', x_true)
+    plot_error_pos_sigma(x_est, x_true, P_est, N, 'sequential', 'error_pos_sigma')
+    plot_error_vel_sigma(x_est, x_true, P_est, N, 'sequential', 'error_vel_sigma')
+    plot_error_att_sigma(x_est, x_true, P_est, N, 'sequential', 'error_att_sigma')
+    plot_error_acc_bias_sigma(x_est, x_true, P_est, N, 'sequential', 'error_acc_bias_sigma')  
+    plot_error_rate_bias_sigma(x_est, x_true, P_est, N, 'sequential', 'error_rate_bias_sigma')
     
-    ## Iterative timings
+    ## Sequential timings
 
     print("\nEllapsed time for sequential: ", elapsed_sequential)
     print("Summed runtime used in prediction module: ", total_elapsed_pred_timer_sequential, "seconds")
@@ -392,8 +403,14 @@ if (use_UDU):
         #Summed up time used in estimation steps
         total_elapsed_est_timer_UDU[i] = np.sum(elapsed_est_timer_UDU)
         
-    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
+    #Plot the latest run and save figures
+    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'udu', 'path_udu', x_true,)
+    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'udu', 'path3d_udu', x_true,)
+    plot_error_pos_sigma(x_est, x_true, P_est, N, 'udu', 'error_pos_sigma_udu')
+    plot_error_vel_sigma(x_est, x_true, P_est, N, 'udu', 'error_vel_sigma_udu')
+    plot_error_att_sigma(x_est, x_true, P_est, N, 'udu', 'error_att_sigma_udu')
+    plot_error_acc_bias_sigma(x_est, x_true, P_est, N, 'udu', 'error_acc_bias_sigma_udu')  
+    plot_error_rate_bias_sigma(x_est, x_true, P_est, N, 'udu', 'error_rate_bias_sigma_udu')
     ## UDU timings
 
     print("\nEllapsed time for UDU: ", elapsed_UDU)
@@ -428,49 +445,3 @@ if (use_UDU & use_sequential_pseudoranges):
     print("Average Relative speedup of est module in  sequential vs UDU-sequential: ", (average_elapsed_est_timer_sequential - average_elapsed_est_timer_UDU)/average_elapsed_est_timer_sequential*100,"%")
 # %% Plots and stuff                           
 
-# # plt.close("all")
-# t = np.linspace(0,dt * (N-1), N)
-# # plot_path(t, N, pos_t, pos_t)
-# tGNSS = loaded_data["timeGNSS"].T
-# z_GNSS = loaded_data["z_GNSS"].T
-
-# z_acc_vector = loaded_data["z_acc"].T
-# acc_t = loaded_data["acc_t"].T
-# omega_t = loaded_data["omega_t"].T
-# z_gyro_vector = loaded_data["z_gyro"].T
-
-
-# %% Estimation plots
-
-# plot_pos(t, N, x_est, tGNSS, GNSSk, z_GNSS, x_true)
-# plot_vel(t, N, x_est, x_true)
-# plot_acc(t, N, z_acc_vector, acc_t)
-# # %%
-# # plot_gyro(t, N, z_gyro_vector, omega_t)
-# # %%
-# plot_angle(t, N, x_est, x_true)
-# # 
-# # plot_estimate(t, N, x_est)
-
-# plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-# # # %%
-# plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, x_true)
-# # # %%
-
-# state_error_plots(t, N, x_est, x_true, delta_x)
-
-# # %% Validation plots
-# plot_error_pos_sigma(x_est, x_true, P_est, N)
-# plot_error_vel_sigma(x_est, x_true, P_est, N)
-# plot_error_att_sigma(x_est, x_true, P_est, N)
-# plot_error_acc_bias_sigma(x_est, x_true, P_est, N)
-# plot_error_rate_bias_sigma(x_est, x_true, P_est, N)
-
-# # error_distance_plot(t, N, dt, GNSSk, x_true, delta_x, z_GNSS)
-# # %% 
-# plot_NIS(NIS)
-# plot_NEES(t, N, dt,
-#           NEES_all, NEES_pos, NEES_vel, NEES_att, NEES_accbias, NEES_gyrobias,
-#             confprob=0.95)
-
-# %%

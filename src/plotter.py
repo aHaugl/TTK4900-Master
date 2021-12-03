@@ -28,9 +28,9 @@ ERR_GYRO_BIAS_IDX = CatSlice(start=12, stop=15)
 
 
 # %% Can be used to plot error covariance
-def plot_error_pos_sigma(x_est, x_true, P_est, N):
-
-    fig13, ax = plt.subplots(nrows=3, ncols=1, sharex=True)
+def plot_error_pos_sigma(x_est, x_true, P_est, N, filterversion, figname):
+    plt.figure()
+    fig, ax = plt.subplots(nrows=3, ncols=1, sharex=True)
     pos_err = x_true[:N, :3] - x_est[:N, :3]
     #pose_err[:, 2] *= 180/np.pi
     ylabels = ['m', 'm', 'm']
@@ -39,22 +39,26 @@ def plot_error_pos_sigma(x_est, x_true, P_est, N):
     # three_std = 3*np.sqrt(np.vstack([P[np.diag_indices(3)] for P in P_est[:N,:3]]))
     # std[:, 2] *= 180/np.pi
     for ax, err, std, tag, ylabel, in zip(ax, pos_err.T, std.T, tags, ylabels):
-        ax.plot(err, label='error')
+        ax.plot(err, label='State error')
         ax.fill_between(
             np.arange(std.size),
             -std,
             std,
-            color='g', alpha=0.2, label='estimated 3xSTD')
+            color='g', alpha=0.2, label='Estimated 3 times std')
         ax.set_title(
-            f"{tag} (RMSE={np.sqrt((err**2).mean()):.3f}{ylabel})")
-        ax.set_ylabel(f"[{ylabel}]")
+            f"{tag}: RMSE = {np.sqrt((err**2).mean()):.3f}{ylabel})")
+        ax.set_ylabel(f"{ylabel} [m]")
         ax.grid()
-        ax.legend()
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -1),
+          fancybox=True, shadow=True, ncol=5)
     ax.set_xlabel("Steps [Seconds/0.01]")
-    fig13.tight_layout()
+    fig.tight_layout()
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.eps')
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.png')
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.pdf')
 
-def plot_error_vel_sigma(x_est, x_true, P_est, N):
-    fig14, ax = plt.subplots(nrows=3, ncols=1, sharex=True)
+def plot_error_vel_sigma(x_est, x_true, P_est, N, filterversion, figname):
+    fig, ax = plt.subplots(nrows=3, ncols=1, sharex=True)
     pos_err = x_true[:N, 3:6] - x_est[:N, 3:6]
     #pose_err[:, 2] *= 180/np.pi
     ylabels = ['m/s', 'm/s', 'm/s']
@@ -63,23 +67,28 @@ def plot_error_vel_sigma(x_est, x_true, P_est, N):
     # three_std = 3*np.sqrt(np.vstack([P[np.diag_indices(3)] for P in P_est[:N,3:6]]))
     # std[:, 2] *= 180/np.pi
     for ax, err, std, tag, ylabel, in zip(ax, pos_err.T, std.T, tags, ylabels):
-        ax.plot(err, label='error')
+        ax.plot(err, label='State error')
         ax.fill_between(
             np.arange(std.size),
             -std,
             std,
-            color='g', alpha=0.2, label='estimated 3xSTD')
+            color='g', alpha=0.2, label='Estimated 3 times std')
         ax.set_title(
-            f"{tag} (RMSE={np.sqrt((err**2).mean()):.3f}{ylabel})")
+            f"{tag}: RMSE = {np.sqrt((err**2).mean()):.3f}{ylabel}")
         ax.set_ylabel(f"[{ylabel}]")
         ax.grid()
-        ax.legend()
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -1),
+          fancybox=True, shadow=True, ncol=5)
+    
     ax.set_xlabel("Steps [Seconds/0.01]")
-    fig14.tight_layout()
+    fig.tight_layout()
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.eps')
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.png')
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.pdf')
     
-def plot_error_att_sigma(x_est, x_true, P_est, N):
+def plot_error_att_sigma(x_est, x_true, P_est, N, filterversion, figname):
     
-    fig15, ax = plt.subplots(nrows=3, ncols=1, sharex=True
+    fig, ax = plt.subplots(nrows=3, ncols=1, sharex=True
                              )
     x_true = np.apply_along_axis(quaternion_to_euler, 1, x_true[:N, ATT_IDX])
     x_est = np.apply_along_axis(quaternion_to_euler, 1, x_est[:N, ATT_IDX])
@@ -91,27 +100,30 @@ def plot_error_att_sigma(x_est, x_true, P_est, N):
     
     std = 3*np.sqrt(P_est[:N,ERR_ATT_IDX,ERR_ATT_IDX])
     
-    
     # three_std = 3*np.sqrt(np.vstack([P[np.diag_indices(3)] for P in P_est[:N,6:9]]))
     # std[:, 2] *= 180/np.pi
     for ax, err, std, tag, ylabel, in zip(ax, att_err.T, std.T, tags, ylabels):
-        ax.plot(err, label='error')
+        ax.plot(err, label='Attitude error')
         ax.fill_between(
             np.arange(std.size),
             -std,
             std,
-            color='g', alpha=0.2, label='estimated 3xSTD')
+            color='g', alpha=0.2, label='Estimated 3 times std')
         ax.set_title(
-            f"{tag} (RMSE={np.sqrt((err**2).mean()):.3f}{ylabel})")
+            f"{tag} (RMSE={np.sqrt((err**2).mean()):.3f}{ylabel}")
         ax.set_ylabel(f"[{ylabel}]")
         ax.grid()
-        ax.legend()
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -1),
+          fancybox=True, shadow=True, ncol=5)
     ax.set_xlabel("Steps [Seconds/0.01]")
-    fig15.tight_layout()
+    fig.tight_layout()
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.eps')
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.png')
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.pdf')
     
-def plot_error_acc_bias_sigma(x_est, x_true, P_est, N):
+def plot_error_acc_bias_sigma(x_est, x_true, P_est, N, filterversion, figname):
     
-    fig16, ax = plt.subplots(nrows=3, ncols=1, sharex=True
+    fig, ax = plt.subplots(nrows=3, ncols=1, sharex=True
                              )
     x_true = x_true[:N, ERR_ACC_BIAS_IDX]
     x_est = x_est[:N, ERR_ACC_BIAS_IDX]
@@ -127,23 +139,27 @@ def plot_error_acc_bias_sigma(x_est, x_true, P_est, N):
     # three_std = 3*np.sqrt(np.vstack([P[np.diag_indices(3)] for P in P_est[:N,6:9]]))
     # std[:, 2] *= 180/np.pi
     for ax, err, std, tag, ylabel, in zip(ax, acc_bias_err.T, std.T, tags, ylabels):
-        ax.plot(err, label='error')
+        ax.plot(err, label='Accelerometer bias error')
         ax.fill_between(
             np.arange(std.size),
             -std,
             std,
-            color='g', alpha=0.2, label='estimated 3xSTD')
+            color='g', alpha=0.2, label='Estimated 3 times std')
         ax.set_title(
             f"{tag} (RMSE={np.sqrt((err**2).mean()):.3f}{ylabel})")
         ax.set_ylabel(f"[{ylabel}]")
         ax.grid()
-        ax.legend()
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -1),
+          fancybox=True, shadow=True, ncol=5)
     ax.set_xlabel("Steps [Seconds/0.01]")
-    fig16.tight_layout()
+    fig.tight_layout()
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.eps')
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.png')
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.pdf')
     
-def plot_error_rate_bias_sigma(x_est, x_true, P_est, N):
+def plot_error_rate_bias_sigma(x_est, x_true, P_est, N, filterversion, figname):
     
-    fig17, ax = plt.subplots(nrows=3, ncols=1, sharex=True
+    fig, ax = plt.subplots(nrows=3, ncols=1, sharex=True
                              )
     x_true = x_true[:N, ERR_GYRO_BIAS_IDX]
     x_est =  x_est[:N, ERR_GYRO_BIAS_IDX]
@@ -159,29 +175,33 @@ def plot_error_rate_bias_sigma(x_est, x_true, P_est, N):
     # three_std = 3*np.sqrt(np.vstack([P[np.diag_indices(3)] for P in P_est[:N,6:9]]))
     # std[:, 2] *= 180/np.pi
     for ax, err, std, tag, ylabel, in zip(ax, gyro_bias_err.T, std.T, tags, ylabels):
-        ax.plot(err, label='Gyro_bias error')
+        ax.plot(err, label='Gyro bias error')
         ax.fill_between(
             np.arange(std.size),
             -std,
             std,
-            color='g', alpha=0.2, label='estimated 3xSTD')
+            color='g', alpha=0.2, label='Estimated 3 times std')
         ax.set_title(
             f"{tag} (RMSE={np.sqrt((err**2).mean()):.3f}{ylabel})")
         ax.set_ylabel(f"[{ylabel}]")
         ax.grid()
-        ax.legend()
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -1),
+          fancybox=True, shadow=True, ncol=5)
     ax.set_xlabel("Steps [Seconds/0.01]")
-    fig17.tight_layout()
+    fig.tight_layout()
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.eps')
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.png')
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.pdf')
     
 # %% 
     
 
-def plot_pos(t,N, x_est, tGNSS, GNSSk, z_GNSS, x_true=None):
+def plot_pos(t,N, x_est, tGNSS, GNSSk, z_GNSS, filterversion, figname, x_true=None):
     x_est = x_est[:, POS_IDX]
     x_true = x_true[:, POS_IDX]
     
 
-    fig1, axs1 = plt.subplots(4, 1, num=1, clear=True)
+    fig, axs1 = plt.subplots(4, 1, num=1, clear=True)
     
     axs1[0].plot(t, x_est[:N,0])
     if x_true is not None:
@@ -216,11 +236,68 @@ def plot_pos(t,N, x_est, tGNSS, GNSSk, z_GNSS, x_true=None):
             ]
         )
     axs1[3].set(xlabel="Time [Seconds]")
-    fig1.suptitle("Estimated vs true position")
-    fig1.tight_layout()
-
-  
+    fig.suptitle("Estimated vs true position")
+    fig.tight_layout()
     
+
+    
+def plot_3Dpath(t, N, beacon_location, GNSSk, z_GNSS,  x_est, filterversion, figname, x_true=None):
+    # 3d position plot
+    x_est = x_est[:, POS_IDX]
+    if x_true is not None:
+        x_true = x_true[:, POS_IDX]
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection='3d')
+
+    
+    ax.plot3D(x_est[:N,1], x_est[:N,0], x_est[:N,2])
+    if x_true is not None:
+        ax.plot3D(x_true[:N,1], x_true[:N,0], x_true[:N,2],linestyle='dashed')
+
+    ax.scatter3D(z_GNSS[:GNSSk, 1], z_GNSS[:GNSSk, 0], z_GNSS[:GNSSk, 2])
+    ax.scatter3D(beacon_location[:,1], beacon_location[:,0],beacon_location[:,2], marker = 'D')
+    
+    ax.set_xlabel("East [m]")
+    ax.set_ylabel("North [m]")
+    ax.set_zlabel("Altitude [m]")
+    ax.legend(["Estimated NED pos", "True NED pos", "z_GNSS", "Beacon location"], loc='best')
+    fig.suptitle("Estimated vs true 3d path")
+    fig.tight_layout()
+    
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.eps')
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.png')
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.pdf')
+    
+    # if dosavefigures:
+    #     fig1.savefig(figdir+"ned.pdf")
+
+    # state estimation
+    
+def plot_path(t,N, beacon_location, GNSSk, z_GNSS, x_est, filterversion, figname, x_true=None):
+    #
+    x_est = x_est[:, POS_IDX]
+    x_true = x_true[:, POS_IDX]
+    fig8 = plt.figure(8)
+    ax8 = fig8.add_subplot(1,1,1)
+
+    ax8.plot(x_est[:N,1], x_est[:N,0])
+    if x_true is not None:
+        ax8.plot(x_true[:N,1], x_true[:N,0],linestyle='dashed')    
+    ax8.scatter(z_GNSS[:GNSSk, 1], z_GNSS[:GNSSk, 0], marker=',')
+    ax8.scatter(beacon_location[:,1], beacon_location[:,0], marker = 'D')
+        
+    ax8.set(ylabel="NED position [m]")
+    ax8.set_xlabel("East [m]")
+    ax8.set_ylabel("North [m]")
+    ax8.legend(["Estimated NED pos", "True NED pos", "z_GNSS", "Beacon location"])
+    
+    fig8.suptitle("Estimated vs true path")
+    fig8.tight_layout()
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.eps')
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.png')
+    plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.pdf')
+
 
 def plot_vel(t,N, x_est, x_true=None):
     x_est = x_est[:, VEL_IDX]
@@ -413,55 +490,7 @@ def plot_estimate(t, N, x_est):
     #     fig2.savefig(figdir+"state_estimates.pdf")
 
 
-def plot_3Dpath(t, N, beacon_location, GNSSk, z_GNSS,  x_est, x_true=None):
-    # 3d position plot
-    x_est = x_est[:, POS_IDX]
-    if x_true is not None:
-        x_true = x_true[:, POS_IDX]
-    
-    fig7 = plt.figure(7)
-    ax = fig7.add_subplot(1, 1, 1, projection='3d')
 
-    
-    ax.plot3D(x_est[:N,1], x_est[:N,0], x_est[:N,2])
-    if x_true is not None:
-        ax.plot3D(x_true[:N,1], x_true[:N,0], x_true[:N,2],linestyle='dashed')
-
-    ax.scatter3D(z_GNSS[:GNSSk, 1], z_GNSS[:GNSSk, 0], z_GNSS[:GNSSk, 2])
-    ax.scatter3D(beacon_location[:,1], beacon_location[:,0],beacon_location[:,2], marker = 'D')
-    
-    ax.set_xlabel("East [m]")
-    ax.set_ylabel("North [m]")
-    ax.set_zlabel("Altitude [m]")
-    ax.legend(["Estimated NED pos", "True NED pos", "z_GNSS", "Beacon location"])
-    
-    fig7.suptitle("Estimated vs true 3d path")
-    fig7.tight_layout()
-    # if dosavefigures:
-    #     fig1.savefig(figdir+"ned.pdf")
-
-    # state estimation
-    
-def plot_path(t,N, beacon_location, GNSSk, z_GNSS, x_est, x_true=None):
-    #
-    x_est = x_est[:, POS_IDX]
-    x_true = x_true[:, POS_IDX]
-    fig8 = plt.figure(8)
-    ax8 = fig8.add_subplot(1,1,1)
-
-    ax8.plot(x_est[:N,1], x_est[:N,0])
-    if x_true is not None:
-        ax8.plot(x_true[:N,1], x_true[:N,0],linestyle='dashed')    
-    ax8.scatter(z_GNSS[:GNSSk, 1], z_GNSS[:GNSSk, 0], marker=',')
-    ax8.scatter(beacon_location[:,1], beacon_location[:,0], marker = 'D')
-        
-    ax8.set(ylabel="NED position [m]")
-    ax8.set_xlabel("East [m]")
-    ax8.set_ylabel("North [m]")
-    ax8.legend(["Estimated NED pos", "True NED pos", "z_GNSS", "Beacon location"])
-    
-    fig8.suptitle("Estimated vs true path")
-    fig8.tight_layout()
     
 def state_error_plots(t, N, x_est, x_true, delta_x):
     if x_true is None:
