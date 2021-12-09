@@ -198,8 +198,8 @@ eskf_parameters = [acc_std,
 # %% Run estimation for
 #Number of seconds of simulation to run. len(timeIMU) decides max
 # N: int = int(1000/dt)
-N: int = int(100/dt) 
-# N: int = int(30000) 
+N: int = int(10/dt) 
+# N: int = int(600/dt) 
 # N: int = int(90000)
 # N: int = len(timeIMU)
 offset = 0

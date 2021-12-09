@@ -421,6 +421,9 @@ class ESKF_batch:
         
         P_predicted = Phid @ P @ Phid.T + GQGd
         
+        #Normalize 
+        P_predicted = (P_predicted + P_predicted) / 2
+        
         # print(P_predicted[ERR_ATT_IDX,ERR_ATT_IDX])
         
         assert P_predicted.shape == (
@@ -709,7 +712,7 @@ class ESKF_batch:
         # num_beacons = 3
         est_ranges = np.zeros(num_beacons)
         measured_ranges = np.zeros(num_beacons)
-        delta_P = np.zeros(num_beacons)
+        # delta_P = np.zeros(num_beacons)
         
         pos_est = x_nominal[POS_IDX]  
         pos_meas = z_GNSS_position
@@ -724,7 +727,7 @@ class ESKF_batch:
                 )
                         
         #Pseudorange measurement residual
-        v = measured_ranges - est_ranges
+        v = measured_ranges - est_ranges # = z - z_hat
 
         #Geometry matrix consisting of normalized LOS-vectors
         H = np.zeros((num_beacons, 15))

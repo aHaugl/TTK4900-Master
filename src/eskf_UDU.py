@@ -851,18 +851,7 @@ class ESKF_udu:
         H = np.zeros((1,15))
         delta_x = np.zeros((15,1))
         pos_est = np.reshape(pos_est,((1,3)))
-       
-       #Declaration of Neil Carlson Agee-Turner update
-        # K_bar = np.zeros(15)
-        # alpha_vector = np.zeros(15)
-        # lambda_vector = np.zeros(15)
-        # D = np.zeros((15,15))
-        # U = np.zeros((15,15))
-        
-        
-        #1) Split P^- into U^- and D^-, or U_bar, D_bar which is the notation in NASA
-        
-
+           
         for i in range(num_beacons):
 
             z_hat_temp = la.norm(pos_est -b_loc[i,:])                                       # norm of 3x1 - 3x1 = R1x1
@@ -874,10 +863,13 @@ class ESKF_udu:
             # 1) Beregn S, eller alpha_i
             # S = H @ (U_bar @ D_bar @ U_bar.T) @ H.T + R_beacons[i,i]      
             S = H @ P @ H.T + R_beacons[i,i]   #1x1
+            
             # 2 Perform a U-D factorization of the prior covariance to obtain Ui-1, Di-1
             U_bar, D_bar = UDU_factorization(P)
+            
             # 3) Beregn U_tilde, D_tilde, mao right side of eq 6.120 Simon (kalt med bar. NASA bruker tilde)
             P_tilde = D_bar - 1/ S * (D_bar @ U_bar.T @ H.T)@(D_bar @ U_bar.T @H.T).T     #15x15
+            
             # 4) Find the UD factorization of P_tilde
             U_tilde, D_tilde = UDU_factorization(P_tilde)
             
@@ -885,16 +877,14 @@ class ESKF_udu:
             U = U_bar@U_tilde
             D = D_tilde
             
-            # 6) compute the gain in U and D form
+            # 6) compute the gain in U and D form to obtain delta_x and z_hat
             K = U @ D @ U.T @ H.T / S  
             
             # 7) Compute the Joseph form
-            P_Jo = I - K * H
+            # P_Jo = I - K * H
 
             # 8) Compute the posterior covariance for this step(?)
             P = U @ D @ U.T              
-            
-            #######################################
             # This is delta_x stuff
             #Skal være R1x1 #delta_x må bli skalar, H = R1x15, delta_x = 15x1
             z_hat = la.norm(pos_est - b_loc[i,:]) + H @ delta_x

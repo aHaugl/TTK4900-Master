@@ -421,6 +421,9 @@ class ESKF_sequential:
         
         P_predicted = Phid @ P @ Phid.T + GQGd
         
+        #Normalize 
+        P_predicted = (P_predicted + P_predicted) / 2
+        
         # print(P_predicted[ERR_ATT_IDX,ERR_ATT_IDX])
         
         assert P_predicted.shape == (
