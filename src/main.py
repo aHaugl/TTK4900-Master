@@ -198,7 +198,7 @@ eskf_parameters = [acc_std,
 # %% Run estimation for
 #Number of seconds of simulation to run. len(timeIMU) decides max
 # N: int = int(1000/dt)
-N: int = int(10/dt) 
+N: int = int(100/dt) 
 # N: int = int(600/dt) 
 # N: int = int(90000)
 # N: int = len(timeIMU)
@@ -229,7 +229,7 @@ use_UDU: bool = True
 # use_UDU: bool = False
 
 num_beacons = len(beacon_location)
-num_sims = 1
+num_sims = 5
 
 #Timers for batch-filter
 t_batch = np.zeros(num_sims)
@@ -300,25 +300,25 @@ if (use_batch_pseudoranges):
     #Plot the latest run and save figures
     plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'batch', 'path_batch',x_true)
     plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'batch', 'path3d_batch',x_true)
-    plot_error_pos_sigma(x_est, x_true, P_est, N, 'batch', 'error_pos_sigma')
-    plot_error_vel_sigma(x_est, x_true, P_est, N, 'batch', 'error_vel_sigma')
-    plot_error_att_sigma(x_est, x_true, P_est, N, 'batch', 'error_att_sigma')
-    plot_error_acc_bias_sigma(x_est, x_true, P_est, N, 'batch', 'error_acc_bias_sigma')  
-    plot_error_rate_bias_sigma(x_est, x_true, P_est, N, 'batch', 'error_rate_bias_sigma')
+    plot_error_pos_sigma(x_est, x_true, P_est, N, 'batch', 'error_pos_sigma_batch')
+    plot_error_vel_sigma(x_est, x_true, P_est, N, 'batch', 'error_vel_sigma_batch')
+    plot_error_att_sigma(x_est, x_true, P_est, N, 'batch', 'error_att_sigma_batch')
+    plot_error_acc_bias_sigma(x_est, x_true, P_est, N, 'batch', 'error_acc_bias_sigma_batch')  
+    plot_error_rate_bias_sigma(x_est, x_true, P_est, N, 'batch', 'error_rate_bias_sigma_batch')
     # Batch timings
 
-    print("\nEllapsed time for batch: ", elapsed_batch)
-    print("Summed runtime used in prediction module: ", total_elapsed_pred_timer_batch, "seconds")
-    print("Portion of runtime prediction module occupies: ", total_elapsed_pred_timer_batch/elapsed_batch*100, "%")
-    print("Summed runtime used in estimation module: ", total_elapsed_est_timer_batch, "seconds")
-    print("Portion of runtime estimation module occupies: ", total_elapsed_est_timer_batch/elapsed_batch*100, "%")
+    print("\nEllapsed time for batch: ", np.round(elapsed_batch,3))
+    print("Summed runtime used in prediction module: ", np.round(total_elapsed_pred_timer_batch,3), "seconds")
+    print("Portion of runtime prediction module occupies: ", np.round(total_elapsed_pred_timer_batch/elapsed_batch*100,3), "%")
+    print("Summed runtime used in estimation module: ", np.round(total_elapsed_est_timer_batch,3), "seconds")
+    print("Portion of runtime estimation module occupies: ", np.round(total_elapsed_est_timer_batch/elapsed_batch*100,3), "%")
 
-    average_time_batch = np.average(elapsed_batch)
+    average_time_batch = np.round(np.average(elapsed_batch),3)
     print("\nAverage time for batch elapsed: ", average_time_batch, "seconds")
-    average_elapsed_pred_timer_batch = np.average(total_elapsed_pred_timer_batch)
-    average_elapsed_est_timer_batch = np.average(total_elapsed_est_timer_batch)
-    print("Average runtime for prediction module: ", average_elapsed_pred_timer_batch, ", where average occupies =", average_elapsed_pred_timer_batch/average_time_batch*100, "% " "relative to total time")
-    print("Average runtime for estimation module: ", average_elapsed_est_timer_batch, ", where average occupies =", average_elapsed_est_timer_batch/average_time_batch*100, "% " "relative to total time")
+    average_elapsed_pred_timer_batch = np.round(np.average(total_elapsed_pred_timer_batch),3)
+    average_elapsed_est_timer_batch = np.round(np.average(total_elapsed_est_timer_batch),3)
+    print("Average runtime for prediction module: ", average_elapsed_pred_timer_batch, ", where average occupies =", np.round(average_elapsed_pred_timer_batch/average_time_batch*100,3), "% " "relative to total time")
+    print("Average runtime for estimation module: ", average_elapsed_est_timer_batch, ", where average occupies =", np.round(average_elapsed_est_timer_batch/average_time_batch*100,3), "% " "relative to total time")
 
 # %%
 if (use_sequential_pseudoranges):
@@ -352,27 +352,27 @@ if (use_sequential_pseudoranges):
     #Plot the latest run and save figures
     plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'sequential', 'path_seq', x_true)
     plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'sequential', 'path3d_seq', x_true)
-    plot_error_pos_sigma(x_est, x_true, P_est, N, 'sequential', 'error_pos_sigma')
-    plot_error_vel_sigma(x_est, x_true, P_est, N, 'sequential', 'error_vel_sigma')
-    plot_error_att_sigma(x_est, x_true, P_est, N, 'sequential', 'error_att_sigma')
-    plot_error_acc_bias_sigma(x_est, x_true, P_est, N, 'sequential', 'error_acc_bias_sigma')  
-    plot_error_rate_bias_sigma(x_est, x_true, P_est, N, 'sequential', 'error_rate_bias_sigma')
+    plot_error_pos_sigma(x_est, x_true, P_est, N, 'sequential', 'error_pos_sigma_seq')
+    plot_error_vel_sigma(x_est, x_true, P_est, N, 'sequential', 'error_vel_sigma_seq')
+    plot_error_att_sigma(x_est, x_true, P_est, N, 'sequential', 'error_att_sigma_seq')
+    plot_error_acc_bias_sigma(x_est, x_true, P_est, N, 'sequential', 'error_acc_bias_sigma_seq')  
+    plot_error_rate_bias_sigma(x_est, x_true, P_est, N, 'sequential', 'error_rate_bias_sigma_seq')
     
     ## Sequential timings
 
-    print("\nEllapsed time for sequential: ", elapsed_sequential)
-    print("Summed runtime used in prediction module: ", total_elapsed_pred_timer_sequential, "seconds")
-    print("Portion of runtime prediction module occupies: ", total_elapsed_pred_timer_sequential/elapsed_sequential*100,"%")
-    print("Summed runtime used in estimation module: ", total_elapsed_est_timer_sequential, "seconds")
-    print("Portion of runtime estimation module occupies: ", total_elapsed_est_timer_sequential/elapsed_sequential*100,"%")
+    print("\nEllapsed time for sequential: ", np.round(elapsed_sequential,3))
+    print("Summed runtime used in prediction module: ", np.round(total_elapsed_pred_timer_sequential,3), "seconds")
+    print("Portion of runtime prediction module occupies: ", np.round(total_elapsed_pred_timer_sequential/elapsed_sequential*100,3),"%")
+    print("Summed runtime used in estimation module: ", np.round(total_elapsed_est_timer_sequential,3), "seconds")
+    print("Portion of runtime estimation module occupies: ", np.round(total_elapsed_est_timer_sequential/elapsed_sequential*100,3),"%")
   
 
-    average_time_sequential = np.average(elapsed_sequential)
+    average_time_sequential = np.round(np.average(elapsed_sequential),3)
     print("\nAverage time for sequential elapsed: ", average_time_sequential, "seconds")
-    average_elapsed_pred_timer_sequential = np.average(total_elapsed_pred_timer_sequential)
-    average_elapsed_est_timer_sequential = np.average(total_elapsed_est_timer_sequential)
-    print("Average runtime for prediction module: ", average_elapsed_pred_timer_sequential, ", where average occupies =", average_elapsed_pred_timer_sequential/average_time_sequential*100, "% " "relative to total time")
-    print("Average runtime for estimation module: ", average_elapsed_est_timer_sequential, ", where average occupies =", average_elapsed_est_timer_sequential/average_time_sequential*100, "% " "relative to total time")
+    average_elapsed_pred_timer_sequential = np.round(np.average(total_elapsed_pred_timer_sequential),3)
+    average_elapsed_est_timer_sequential = np.round(np.average(total_elapsed_est_timer_sequential),3)
+    print("Average runtime for prediction module: ", average_elapsed_pred_timer_sequential, ", where average occupies =", np.round(average_elapsed_pred_timer_sequential/average_time_sequential*100,3), "% " "relative to total time")
+    print("Average runtime for estimation module: ", average_elapsed_est_timer_sequential, ", where average occupies =", np.round(average_elapsed_est_timer_sequential/average_time_sequential*100,3), "% " "relative to total time")
 # %%
 if (use_UDU):
     for i in range(num_sims):  
@@ -413,35 +413,35 @@ if (use_UDU):
     plot_error_rate_bias_sigma(x_est, x_true, P_est, N, 'udu', 'error_rate_bias_sigma_udu')
     ## UDU timings
 
-    print("\nEllapsed time for UDU: ", elapsed_UDU)
-    print("Summed runtime used in UDU prediction module: ", total_elapsed_pred_timer_UDU, "seconds")
-    print("Portion of runtime prediction module in UDU occupies: ", total_elapsed_pred_timer_UDU/elapsed_UDU,"%")
-    print("Summed runtime used in UDU estimation module: ", total_elapsed_est_timer_UDU, "seconds")
-    print("Portion of runtime estimation module in UDU ccupies: ", total_elapsed_est_timer_UDU/elapsed_UDU,"%")
+    print("\nEllapsed time for UDU: ",  np.round(elapsed_UDU,3))
+    print("Summed runtime used in UDU prediction module: ",  np.round(total_elapsed_pred_timer_UDU,3), "seconds")
+    print("Portion of runtime prediction module in UDU occupies: ",  np.round(total_elapsed_pred_timer_UDU/elapsed_UDU,3),"%")
+    print("Summed runtime used in UDU estimation module: ",  np.round(total_elapsed_est_timer_UDU,3), "seconds")
+    print("Portion of runtime estimation module in UDU ccupies: ",  np.round(total_elapsed_est_timer_UDU/elapsed_UDU,3),"%")
 
-    average_time_UDU = np.average(elapsed_UDU)
-    print("\nAverage time for UDU elapsed: ", average_time_UDU, "seconds")
-    average_elapsed_pred_timer_UDU = np.average(total_elapsed_pred_timer_UDU)
-    average_elapsed_est_timer_UDU = np.average(total_elapsed_est_timer_UDU)
-    print("Average runtime for prediction module in UDU: ", average_elapsed_pred_timer_UDU, ", where average occupies =", average_elapsed_pred_timer_UDU/average_time_UDU*100, "% " "relative to total time")
-    print("Average runtime for estimation module in UDU: ", average_elapsed_est_timer_UDU, ", where average occupies =", average_elapsed_est_timer_UDU/average_time_UDU*100, "% " "relative to total time")
+    average_time_UDU = np.round(np.average(elapsed_UDU),3)
+    print("\nAverage time for UDU elapsed: ", np.round(average_time_UDU,3), "seconds")
+    average_elapsed_pred_timer_UDU = np.round(np.average(total_elapsed_pred_timer_UDU),3)
+    average_elapsed_est_timer_UDU = np.round(np.average(total_elapsed_est_timer_UDU),3)
+    print("Average runtime for prediction module in UDU: ", average_elapsed_pred_timer_UDU, ", where average occupies =",  np.round(average_elapsed_pred_timer_UDU/average_time_UDU*100,3), "% " "relative to total time")
+    print("Average runtime for estimation module in UDU: ", average_elapsed_est_timer_UDU, ", where average occupies =",  np.round(average_elapsed_est_timer_UDU/average_time_UDU*100,3), "% " "relative to total time")
 
     
 # %%
 ## Relative relations
 if (use_batch_pseudoranges & use_sequential_pseudoranges):
-    print("\nAverage Relative speedup of batch vs sequential: ", (average_time_batch - average_time_sequential)/average_time_batch*100,"%")
-    print("Average Relative speedup of pred module in batch vs sequential: ", (average_elapsed_pred_timer_batch - average_elapsed_pred_timer_sequential)/average_elapsed_pred_timer_batch*100,"%")
-    print("Average Relative speedup of est module in batch vs sequential: ", (average_elapsed_est_timer_batch - average_elapsed_est_timer_sequential)/average_elapsed_est_timer_batch*100,"%")
+    print("\nAverage Relative speedup of batch vs sequential: ",  np.round((average_time_batch - average_time_sequential)/average_time_batch*100,3),"%")
+    print("Average Relative speedup of pred module in batch vs sequential: ",  np.round((average_elapsed_pred_timer_batch - average_elapsed_pred_timer_sequential)/average_elapsed_pred_timer_batch*100,3), "%")
+    print("Average Relative speedup of est module in batch vs sequential: ",  np.round((average_elapsed_est_timer_batch - average_elapsed_est_timer_sequential)/average_elapsed_est_timer_batch*100,3), "%")
 
 if (use_batch_pseudoranges & use_UDU):
-    print("\nAverage Relative speedup of batch vs UDU-sequential: ", (average_time_batch - average_time_UDU)/average_time_batch*100,"%")
-    print("Average Relative speedup of pred module in batch vs UDU-sequential: ", (average_elapsed_pred_timer_batch - average_elapsed_pred_timer_UDU)/average_elapsed_pred_timer_batch*100,"%")
-    print("Average Relative speedup of est module in batch vs UDU-sequential: ", (average_elapsed_est_timer_batch - average_elapsed_est_timer_UDU)/average_elapsed_est_timer_batch*100,"%")
+    print("\nAverage Relative speedup of batch vs UDU-sequential: ",  np.round((average_time_batch - average_time_UDU)/average_time_batch*100,3),"%")
+    print("Average Relative speedup of pred module in batch vs UDU-sequential: ",  np.round((average_elapsed_pred_timer_batch - average_elapsed_pred_timer_UDU)/average_elapsed_pred_timer_batch*100,3), "%")
+    print("Average Relative speedup of est module in batch vs UDU-sequential: ",  np.round((average_elapsed_est_timer_batch - average_elapsed_est_timer_UDU)/average_elapsed_est_timer_batch*100,3), "%")
 
 if (use_UDU & use_sequential_pseudoranges):
-    print("\nAverage Relative speedup of sequential vs UDU-sequential: ", (average_time_sequential - average_time_UDU)/average_time_sequential*100,"%")
-    print("Average Relative speedup of pred module in sequential vs UDU-sequential: ", (average_elapsed_pred_timer_sequential - average_elapsed_pred_timer_UDU)/average_elapsed_pred_timer_sequential*100,"%")
-    print("Average Relative speedup of est module in  sequential vs UDU-sequential: ", (average_elapsed_est_timer_sequential - average_elapsed_est_timer_UDU)/average_elapsed_est_timer_sequential*100,"%")
+    print("\nAverage Relative speedup of sequential vs UDU-sequential: ",  np.round((average_time_sequential - average_time_UDU)/average_time_sequential*100,3),"%")
+    print("Average Relative speedup of pred module in sequential vs UDU-sequential: ",  np.round((average_elapsed_pred_timer_sequential - average_elapsed_pred_timer_UDU)/average_elapsed_pred_timer_sequential*100,3), "%")
+    print("Average Relative speedup of est module in  sequential vs UDU-sequential: ",  np.round((average_elapsed_est_timer_sequential - average_elapsed_est_timer_UDU)/average_elapsed_est_timer_sequential*100,3), "%")
 # %% Plots and stuff                           
 

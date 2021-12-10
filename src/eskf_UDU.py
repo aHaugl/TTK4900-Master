@@ -436,6 +436,8 @@ class ESKF_udu:
         
         # Define P^- as P^- = U_bar@D_bar@U_bar.T (which differs from P^- = Phid @ U @ D @ U.T @ Phid.T + GQGd)
         P_MGS = U_bar @ D_bar @ U_bar.T
+        
+        P_MGS = (P_MGS + P_MGS.T )/2
             
         assert P_MGS.shape == (
             15,
@@ -877,14 +879,14 @@ class ESKF_udu:
             U = U_bar@U_tilde
             D = D_tilde
             
-            # 6) compute the gain in U and D form to obtain delta_x and z_hat
+            # 6) co{mpute the gain in U and D form to obtain delta_x and z_hat
             K = U @ D @ U.T @ H.T / S  
             
             # 7) Compute the Joseph form
-            # P_Jo = I - K * H
+            P_Jo = I - K * H
 
             # 8) Compute the posterior covariance for this step(?)
-            P = U @ D @ U.T              
+            P = P_Jo @ U @ D @ U.T @ P_Jo.T + K * R_beacons[i,i] * K.T            
             # This is delta_x stuff
             #Skal være R1x1 #delta_x må bli skalar, H = R1x15, delta_x = 15x1
             z_hat = la.norm(pos_est - b_loc[i,:]) + H @ delta_x
