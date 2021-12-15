@@ -4,9 +4,12 @@ Created on Thu Apr 15 13:25:10 2021
 
 @author: andhaugl
 """
+# %% 
 import numpy as np
 import scipy.linalg as la
+import matplotlib
 from matplotlib import pyplot as plt
+matplotlib.use('Agg')
 import scipy.stats
 import pandas as pd
 import seaborn as sns

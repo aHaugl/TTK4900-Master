@@ -1,0 +1,97 @@
+
+ --------------------------------------------------------- 
+
+Number of beacons used: 15, Number of simulations ran through: 2, Simulation duration (seconds): 10.0
+
+Ellapsed time for batch:[1.583 1.458]
+Summed runtime used in prediction module: [1.527 1.414]seconds
+Portion of runtime prediction module occupies: [96.469 96.993]%
+Summed runtime used in estimation module: [0.013 0.014]seconds
+Portion of runtime estimation module occupies: [0.821 0.958]%
+
+Average time for batch elapsed: 1.52seconds
+Average runtime for prediction module: 1.47, where average occupies =96.711% relative to total time
+Average runtime for estimation module: 0.013, where average occupies =0.855% relative to total time
+
+Ellapsed time for batch:[1.45 1.46]
+Summed runtime used in prediction module: [1.405 1.415]seconds
+Portion of runtime prediction module occupies: [96.912 96.919]%
+Summed runtime used in estimation module: [0.012 0.013]seconds
+Portion of runtime estimation module occupies: [0.825 0.89 ]%
+
+Average time for batch elapsed: 1.455seconds
+Average runtime for prediction module: 1.41, where average occupies =96.907% relative to total time
+Average runtime for estimation module: 0.012, where average occupies =0.825% relative to total time
+
+Ellapsed time for batch:[3.655 3.527]
+Summed runtime used in prediction module: [3.424 3.294]seconds
+Portion of runtime prediction module occupies: [93.688 93.386]%
+Summed runtime used in estimation module: [0.187 0.199]seconds
+Portion of runtime estimation module occupies: [5.116 5.636]%
+
+Average time for batch elapsed: [3.65482974 3.52739406]seconds
+Average runtime for prediction module: 3.359, where average occupies =93.539% relative to total time
+Average runtime for estimation module: 0.193, where average occupies =5.375% relative to total time
+
+
+Average Relative speedup of batch vs sequential: 4.276%
+Average Relative speedup of pred module in batch vs sequential: 4.082%
+Average Relative speedup of est module in batch vs sequential: 7.692%
+
+
+Average Relative speedup of batch vs UDU-sequential: -136.25%
+Average Relative speedup of pred module in batch vs UDU-sequential: -128.503%
+Average Relative speedup of est module in batch vs UDU-sequential: -1384.615%
+
+
+Average Relative speedup of sequential vs UDU-sequential: -146.804%
+Average Relative speedup of pred module in sequential vs UDU-sequential: -138.227%
+Average Relative speedup of est module in sequential vs UDU-sequential: -1508.333%
+ --------------------------------------------------------- 
+
+Number of beacons used: 15, Number of simulations ran through: 2, Simulation duration (seconds): 50.0
+
+Ellapsed time for batch:[7.153 7.201]
+Summed runtime used in prediction module: [6.981 7.034]seconds
+Portion of runtime prediction module occupies: [97.603 97.678]%
+Summed runtime used in estimation module: [0.073 0.077]seconds
+Portion of runtime estimation module occupies: [1.019 1.063]%
+
+Average time for batch elapsed: 7.177seconds
+Average runtime for prediction module: 7.008, where average occupies =97.645% relative to total time
+Average runtime for estimation module: 0.075, where average occupies =1.045% relative to total time
+
+Ellapsed time for batch:[7.149 7.124]
+Summed runtime used in prediction module: [6.987 6.969]seconds
+Portion of runtime prediction module occupies: [97.736 97.825]%
+Summed runtime used in estimation module: [0.072 0.063]seconds
+Portion of runtime estimation module occupies: [1.007 0.888]%
+
+Average time for batch elapsed: 7.137seconds
+Average runtime for prediction module: 6.978, where average occupies =97.772% relative to total time
+Average runtime for estimation module: 0.068, where average occupies =0.953% relative to total time
+
+Ellapsed time for batch:[17.84  17.823]
+Summed runtime used in prediction module: [16.809 16.803]seconds
+Portion of runtime prediction module occupies: [94.22  94.276]%
+Summed runtime used in estimation module: [0.933 0.92 ]seconds
+Portion of runtime estimation module occupies: [5.231 5.159]%
+
+Average time for batch elapsed: [17.83974433 17.82275248]seconds
+Average runtime for prediction module: 16.806, where average occupies =94.252% relative to total time
+Average runtime for estimation module: 0.926, where average occupies =5.193% relative to total time
+
+
+Average Relative speedup of batch vs sequential: 0.557%
+Average Relative speedup of pred module in batch vs sequential: 0.428%
+Average Relative speedup of est module in batch vs sequential: 9.333%
+
+
+Average Relative speedup of batch vs UDU-sequential: -148.446%
+Average Relative speedup of pred module in batch vs UDU-sequential: -139.812%
+Average Relative speedup of est module in batch vs UDU-sequential: -1134.667%
+
+
+Average Relative speedup of sequential vs UDU-sequential: -149.839%
+Average Relative speedup of pred module in sequential vs UDU-sequential: -140.843%
+Average Relative speedup of est module in sequential vs UDU-sequential: -1261.765%

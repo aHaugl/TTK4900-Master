@@ -208,11 +208,11 @@ use_UDU: bool = True
 # use_UDU: bool = False
 
 num_beacons = len(beacon_location)
-num_sims = 100
+num_sims = 2
 
 # %% Run estimation for
 #Number of seconds of simulation to run. len(timeIMU) decides max
-N_list: int = [int(10/dt), int(50/dt), int(100/dt), int(600/dt), int(1000/dt)]
+N_list: int = [int(10/dt), int(50/dt)]#, int(100/dt), int(600/dt), int(1000/dt)]
 # N_list: int = [int(1000/dt)]
 # N: int = int(10/dt) 
 # N: int = int(50/dt)
@@ -270,7 +270,7 @@ for i in range(len(N_list)):
     print("Number of simulations ran through", num_sims)
     print("Simulation duration (seconds): ", N*dt) 
 
-    # %
+    
     #if (use_batch_pseudoranges):
     for i in range(num_sims):  
         # timeit.timeit()
@@ -411,7 +411,7 @@ for i in range(len(N_list)):
         plot_error_att_sigma(x_est, x_true, P_est, N, '10seq', 'error_att_sigma_seq')
         plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '10seq', 'error_acc_bias_sigma_seq')  
         plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '10seq', 'error_rate_bias_sigma_seq')
-    # %%
+    
     if (N == 50/dt):
         plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50seq', 'path_seq', x_true)
         plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50seq', 'path3d_seq', x_true)
@@ -420,7 +420,7 @@ for i in range(len(N_list)):
         plot_error_att_sigma(x_est, x_true, P_est, N, '50seq', 'error_att_sigma_seq')
         plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '50seq', 'error_acc_bias_sigma_seq')  
         plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '50seq', 'error_rate_bias_sigma_seq')
-    # %%
+    
     if (N == 100/dt):
         plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100seq', 'path_seq', x_true)
         plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100seq', 'path3d_seq', x_true)
