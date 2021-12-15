@@ -8,6 +8,8 @@ import numpy as np
 import scipy.linalg as la
 from matplotlib import pyplot as plt
 import scipy.stats
+import pandas as pd
+import seaborn as sns
 
 from scipy.stats.distributions import chi2
 
@@ -261,6 +263,7 @@ def plot_3Dpath(t, N, beacon_location, GNSSk, z_GNSS,  x_est, filterversion, fig
     ax.set_xlabel("East [m]")
     ax.set_ylabel("North [m]")
     ax.set_zlabel("Altitude [m]")
+    
     ax.legend(["Estimated NED pos", "True NED pos", "z_GNSS", "Beacon location"], loc='best')
     fig.suptitle("Estimated vs true 3d path")
     fig.tight_layout()
@@ -299,6 +302,98 @@ def plot_path(t,N, beacon_location, GNSSk, z_GNSS, x_est, filterversion, figname
     plt.savefig('../plots/'f"{filterversion}"'/'f"{figname}"'.pdf')
 
 
+
+def plot_timing_scatter(location, figname, plot_title, batch_time = None, seq_time = None, udu_time = None):
+    fig = plt.figure()
+    n = len(batch_time)
+    labels = ['Batch', 'Sequential', 'UDU']
+    all_data = np.zeros((n,3))
+    all_data[:,0] = batch_time
+    all_data[:,1] = seq_time
+    all_data[:,2] = udu_time
+    
+    avg_data = np.zeros(3)
+    avg_data[0] = np.round(np.average(all_data[:,0]),2)
+    avg_data[1] = np.round(np.average(all_data[:,1]),2)
+    avg_data[2] = np.round(np.average(all_data[:,2]),2)
+    
+    df = pd.DataFrame(all_data, columns=labels)
+  
+    vals, names, xs = [],[],[]
+    for i, col in enumerate(df.columns):
+        vals.append(df[col].values)
+        names.append(col)
+        xs.append(np.random.normal(i + 1, 0.04, df[col].values.shape[0]))  # adds jitter to the data points - can be adjusted
+    
+    # colors = ["crimson", "purple", "limegreen"]
+    plt.boxplot(vals, labels=names)
+    palette = ['r', 'g', 'b', 'y']
+    for x, val, c in zip(xs, vals, palette):
+        plt.scatter(x, val, alpha=0.4, color=c)
+            
+    plt.ylabel('Elapsed run time [s]')
+    plt.grid()
+    plt.title('Filter variation run time for 'f"{plot_title}"', n = 'f"{n}")
+    plt.legend(['Batch average: 'f"{avg_data[0]}"' [s]', 'Seq average: 'f"{avg_data[1]}"' [s]', 'UDU average: 'f"{avg_data[2]}"' [s]'],loc='best', fancybox=True, shadow=True)
+    fig.tight_layout()
+    plt.savefig('../plots/'f"{location}"'/'f"{figname}"'.eps')
+    plt.savefig('../plots/'f"{location}"'/'f"{figname}"'.png')
+    plt.savefig('../plots/'f"{location}"'/'f"{figname}"'.pdf')
+    
+def plot_timing_scatter2(location, figname, plot_title, batch_time = None, seq_time = None):
+    fig = plt.figure()
+    
+    n = len(batch_time)
+    labels = ['Batch', 'Sequential']
+    all_data = np.zeros((n,2))
+    all_data[:,0] = batch_time
+    all_data[:,1] = seq_time
+    
+    avg_data = np.zeros(2)
+    avg_data[0] = np.round(np.average(all_data[:,0]),2)
+    avg_data[1] = np.round(np.average(all_data[:,1]),2)
+
+    
+    df = pd.DataFrame(all_data, columns=labels)
+  
+    vals, names, xs = [],[],[]
+    for i, col in enumerate(df.columns):
+        vals.append(df[col].values)
+        names.append(col)
+        xs.append(np.random.normal(i + 1, 0.04, df[col].values.shape[0]))  # adds jitter to the data points - can be adjusted
+    
+    # colors = ["crimson", "purple", "limegreen"]
+    plt.boxplot(vals, labels=names)
+    palette = ['r', 'g', 'b', 'y']
+    for x, val, c in zip(xs, vals, palette):
+        plt.scatter(x, val, alpha=0.4, color=c)
+            
+    plt.ylabel('Elapsed run time [s]')
+    plt.grid()
+    plt.title('Filter variation run time for 'f"{plot_title}"', n = 'f"{n}")
+    plt.legend(['Batch average: 'f"{avg_data[0]}"' [s]', 'Seq average: 'f"{avg_data[1]}"' [s]'],loc='best', fancybox=True, shadow=True)
+    fig.tight_layout()
+    plt.savefig('../plots/'f"{location}"'/'f"{figname}"'.eps')
+    plt.savefig('../plots/'f"{location}"'/'f"{figname}"'.png')
+    plt.savefig('../plots/'f"{location}"'/'f"{figname}"'.pdf')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###############################
 def plot_vel(t,N, x_est, x_true=None):
     x_est = x_est[:, VEL_IDX]
     x_true = x_true[:, VEL_IDX]

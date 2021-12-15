@@ -44,6 +44,7 @@ from eskf_runner import run_batch_eskf, run_sequential_eskf, run_UDU_eskf
 from plotter import * #plot_error_v_sigma, plot_pos, plot_vel, plot_angle, plot_estimate, plot_3Dpath, plot_path, state_error_plots, plot_NEES, plot_NIS
 # from timer import * 
 
+
 # %% plot config check and style setup
 
 plt.close('all')
@@ -194,28 +195,6 @@ eskf_parameters = [acc_std,
                     p_acc,
                     p_gyro]   
 
-
-# %% Run estimation for
-#Number of seconds of simulation to run. len(timeIMU) decides max
-# N: int = int(1000/dt)
-N: int = int(100/dt) 
-# N: int = int(600/dt) 
-# N: int = int(90000)
-# N: int = len(timeIMU)
-offset = 0
-doGNSS: bool = True
-# rtol = 1e-05
-# atol = 1e-08
-
-# %% Plots and stuff                           
-
-# plt.close("all")
-t = np.linspace(0,dt * (N-1), N)
-# plot_path(t, N, pos_t, pos_t)
-
-
-
-# %% Run eskf_runner  
 """
 Running the simulation
 """
@@ -229,44 +208,70 @@ use_UDU: bool = True
 # use_UDU: bool = False
 
 num_beacons = len(beacon_location)
-num_sims = 5
+num_sims = 100
 
-#Timers for batch-filter
-t_batch = np.zeros(num_sims)
-elapsed_batch = np.zeros(num_sims)
+# %% Run estimation for
+#Number of seconds of simulation to run. len(timeIMU) decides max
+N_list: int = [int(10/dt), int(50/dt), int(100/dt), int(600/dt), int(1000/dt)]
+# N_list: int = [int(1000/dt)]
+# N: int = int(10/dt) 
+# N: int = int(50/dt)
+# N: int = int(600/dt) 
+# N: int = int(1000/dt)
+# N: int = int(90000)
+# N: int = len(timeIMU)
+for i in range(len(N_list)): 
+    N = N_list[i]
+        
+    if(N == 1000/dt):
+        num_sims = 20
+    print("N is " ,N)
+    print("Duration is: ",N*dt)
+    offset = 0
+    doGNSS: bool = True
+    # rtol = 1e-05
+    # atol = 1e-08
 
-#Timers for sequential filter
-t_sequential = np.zeros(num_sims)
-elapsed_sequential = np.zeros(num_sims)
-
-#Timers for UDU filter
-t_UDU = np.zeros(num_sims)
-elapsed_UDU = np.zeros(num_sims)
-
-#Timers for submodules
-total_elapsed_pred_timer_batch = np.zeros(num_sims)
-total_elapsed_est_timer_batch = np.zeros(num_sims)
-average_elapsed_pred_timer_batch = np.zeros(num_sims)
-average_elapsed_est_timer_batch = np.zeros(num_sims)
-
-total_elapsed_pred_timer_sequential = np.zeros(num_sims)
-total_elapsed_est_timer_sequential = np.zeros(num_sims)
-average_elapsed_pred_timer_sequential = np.zeros(num_sims)
-average_elapsed_est_timer_sequential = np.zeros(num_sims)
-
-total_elapsed_pred_timer_UDU = np.zeros(num_sims)
-total_elapsed_est_timer_UDU = np.zeros(num_sims)
-average_elapsed_pred_timer_UDU = np.zeros(num_sims)
-average_elapsed_est_timer_UDU = np.zeros(num_sims)
+    t = np.linspace(0,dt * (N-1), N)
 
 
-# %%
-print("\nNumber of beacons used: ", num_beacons)
-print("Number of simulations ran through", num_sims)
-print("Simulation duration (seconds): ", N*dt) 
+    #Timers for batch-filter
+    t_batch = np.zeros(num_sims)
+    elapsed_batch = np.zeros(num_sims)
 
-# %
-if (use_batch_pseudoranges):
+    #Timers for sequential filter
+    t_sequential = np.zeros(num_sims)
+    elapsed_sequential = np.zeros(num_sims)
+
+    #Timers for UDU filter
+    t_UDU = np.zeros(num_sims)
+    elapsed_UDU = np.zeros(num_sims)
+
+    #Timers for submodules
+    total_elapsed_pred_timer_batch = np.zeros(num_sims)
+    total_elapsed_est_timer_batch = np.zeros(num_sims)
+    average_elapsed_pred_timer_batch = np.zeros(num_sims)
+    average_elapsed_est_timer_batch = np.zeros(num_sims)
+
+    total_elapsed_pred_timer_sequential = np.zeros(num_sims)
+    total_elapsed_est_timer_sequential = np.zeros(num_sims)
+    average_elapsed_pred_timer_sequential = np.zeros(num_sims)
+    average_elapsed_est_timer_sequential = np.zeros(num_sims)
+
+    total_elapsed_pred_timer_UDU = np.zeros(num_sims)
+    total_elapsed_est_timer_UDU = np.zeros(num_sims)
+    average_elapsed_pred_timer_UDU = np.zeros(num_sims)
+    average_elapsed_est_timer_UDU = np.zeros(num_sims)
+
+    print("Timerlists have been initialized")
+
+    
+    print("\nNumber of beacons used: ", num_beacons)
+    print("Number of simulations ran through", num_sims)
+    print("Simulation duration (seconds): ", N*dt) 
+
+    # %
+    #if (use_batch_pseudoranges):
     for i in range(num_sims):  
         # timeit.timeit()
         print("\nUsing batch pseudoranges without factorization. Run number: ", i+1)
@@ -296,17 +301,52 @@ if (use_batch_pseudoranges):
         #Summed up time used in estimation steps
         total_elapsed_est_timer_batch[i] = np.sum(elapsed_est_timer_batch)
 
-
+    
     #Plot the latest run and save figures
-    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'batch', 'path_batch',x_true)
-    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'batch', 'path3d_batch',x_true)
-    plot_error_pos_sigma(x_est, x_true, P_est, N, 'batch', 'error_pos_sigma_batch')
-    plot_error_vel_sigma(x_est, x_true, P_est, N, 'batch', 'error_vel_sigma_batch')
-    plot_error_att_sigma(x_est, x_true, P_est, N, 'batch', 'error_att_sigma_batch')
-    plot_error_acc_bias_sigma(x_est, x_true, P_est, N, 'batch', 'error_acc_bias_sigma_batch')  
-    plot_error_rate_bias_sigma(x_est, x_true, P_est, N, 'batch', 'error_rate_bias_sigma_batch')
+    if (N == 10/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10batch', 'path_batch',x_true)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10batch', 'path3d_batch',x_true)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '10batch', 'error_pos_sigma_batch')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '10batch', 'error_vel_sigma_batch')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '10batch', 'error_att_sigma_batch')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '10batch', 'error_acc_bias_sigma_batch')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '10batch', 'error_rate_bias_sigma_batch')
+    if (N == 50/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50batch', 'path_batch',x_true)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50batch', 'path3d_batch',x_true)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '50batch', 'error_pos_sigma_batch')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '50batch', 'error_vel_sigma_batch')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '50batch', 'error_att_sigma_batch')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '50batch', 'error_acc_bias_sigma_batch')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '50batch', 'error_rate_bias_sigma_batch')
+    if (N == 100/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100batch', 'path_batch',x_true)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100batch', 'path3d_batch',x_true)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '100batch', 'error_pos_sigma_batch')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '100batch', 'error_vel_sigma_batch')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '100batch', 'error_att_sigma_batch')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '100batch', 'error_acc_bias_sigma_batch')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '100batch', 'error_rate_bias_sigma_batch')
+        
+    if (N == 600/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600batch', 'path_batch',x_true)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600batch', 'path3d_batch',x_true)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '600batch', 'error_pos_sigma_batch')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '600batch', 'error_vel_sigma_batch')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '600batch', 'error_att_sigma_batch')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '600batch', 'error_acc_bias_sigma_batch')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '60batch', 'error_rate_bias_sigma_batch')
+        
+    if (N == 1000/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000batch', 'path_batch',x_true)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000batch', 'path3d_batch',x_true)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '1000batch', 'error_pos_sigma_batch')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '1000batch', 'error_vel_sigma_batch')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '1000batch', 'error_att_sigma_batch')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000batch', 'error_acc_bias_sigma_batch')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000batch', 'error_rate_bias_sigma_batch')
     # Batch timings
-
+          
     print("\nEllapsed time for batch: ", np.round(elapsed_batch,3))
     print("Summed runtime used in prediction module: ", np.round(total_elapsed_pred_timer_batch,3), "seconds")
     print("Portion of runtime prediction module occupies: ", np.round(total_elapsed_pred_timer_batch/elapsed_batch*100,3), "%")
@@ -320,8 +360,21 @@ if (use_batch_pseudoranges):
     print("Average runtime for prediction module: ", average_elapsed_pred_timer_batch, ", where average occupies =", np.round(average_elapsed_pred_timer_batch/average_time_batch*100,3), "% " "relative to total time")
     print("Average runtime for estimation module: ", average_elapsed_est_timer_batch, ", where average occupies =", np.round(average_elapsed_est_timer_batch/average_time_batch*100,3), "% " "relative to total time")
 
-# %%
-if (use_sequential_pseudoranges):
+    with open('../runtimes.txt', 'a') as frt:
+            frt.write("\n --------------------------------------------------------- \n")
+            frt.writelines("\nNumber of beacons used: " + str(num_beacons) + ", Number of simulations ran through: " + str(num_sims) +", Simulation duration (seconds): " + str(N*dt) + "\n")
+            frt.writelines("\nEllapsed time for batch:" + str(np.round(elapsed_batch,3)))
+            frt.writelines("\nSummed runtime used in prediction module: " + str(np.round(total_elapsed_pred_timer_batch,3)) + "seconds")
+            frt.writelines("\nPortion of runtime prediction module occupies: " + str(np.round(total_elapsed_pred_timer_batch/elapsed_batch*100,3)) + "%")
+            frt.writelines("\nSummed runtime used in estimation module: " + str(np.round(total_elapsed_est_timer_batch,3)) + "seconds")
+            frt.writelines("\nPortion of runtime estimation module occupies: " + str(np.round(total_elapsed_est_timer_batch/elapsed_batch*100,3)) + "%")
+            frt.write("\n")
+            frt.writelines("\nAverage time for batch elapsed: " +  str(average_time_batch) + "seconds")
+            frt.writelines("\nAverage runtime for prediction module: " + str(average_elapsed_pred_timer_batch) + ", where average occupies =" + str(np.round(average_elapsed_pred_timer_batch/average_time_batch*100,3)) + "% " "relative to total time")
+            frt.writelines("\nAverage runtime for estimation module: " + str(average_elapsed_est_timer_batch) + ", where average occupies =" + str(np.round(average_elapsed_est_timer_batch/average_time_batch*100,3)) + "% " "relative to total time")
+    frt.close()
+    
+    #if (use_sequential_pseudoranges):
     for i in range(num_sims):
         print("\nUsing sequential pseudoranges without factorization. Run number: ", i+1)  
         # timeit.timeit()
@@ -350,22 +403,57 @@ if (use_sequential_pseudoranges):
         total_elapsed_est_timer_sequential[i] = np.sum(elapsed_est_timer_sequential)
 
     #Plot the latest run and save figures
-    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'sequential', 'path_seq', x_true)
-    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'sequential', 'path3d_seq', x_true)
-    plot_error_pos_sigma(x_est, x_true, P_est, N, 'sequential', 'error_pos_sigma_seq')
-    plot_error_vel_sigma(x_est, x_true, P_est, N, 'sequential', 'error_vel_sigma_seq')
-    plot_error_att_sigma(x_est, x_true, P_est, N, 'sequential', 'error_att_sigma_seq')
-    plot_error_acc_bias_sigma(x_est, x_true, P_est, N, 'sequential', 'error_acc_bias_sigma_seq')  
-    plot_error_rate_bias_sigma(x_est, x_true, P_est, N, 'sequential', 'error_rate_bias_sigma_seq')
+    if (N == 10/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10seq', 'path_seq', x_true)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10seq', 'path3d_seq', x_true)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '10seq', 'error_pos_sigma_seq')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '10seq', 'error_vel_sigma_seq')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '10seq', 'error_att_sigma_seq')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '10seq', 'error_acc_bias_sigma_seq')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '10seq', 'error_rate_bias_sigma_seq')
+    # %%
+    if (N == 50/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50seq', 'path_seq', x_true)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50seq', 'path3d_seq', x_true)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '50seq', 'error_pos_sigma_seq')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '50seq', 'error_vel_sigma_seq')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '50seq', 'error_att_sigma_seq')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '50seq', 'error_acc_bias_sigma_seq')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '50seq', 'error_rate_bias_sigma_seq')
+    # %%
+    if (N == 100/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100seq', 'path_seq', x_true)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100seq', 'path3d_seq', x_true)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '100seq', 'error_pos_sigma_seq')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '100seq', 'error_vel_sigma_seq')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '100seq', 'error_att_sigma_seq')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '100seq', 'error_acc_bias_sigma_seq')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '100seq', 'error_rate_bias_sigma_seq')
+    if (N == 600/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600seq', 'path_seq', x_true)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600seq', 'path3d_seq', x_true)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '600seq', 'error_pos_sigma_seq')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '600seq', 'error_vel_sigma_seq')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '6006seq', 'error_att_sigma_seq')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '600seq', 'error_acc_bias_sigma_seq')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '600seq', 'error_rate_bias_sigma_seq')
+    if (N == 1000/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000seq', 'path_seq', x_true)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000seq', 'path3d_seq', x_true)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '1000seq', 'error_pos_sigma_seq')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '1000seq', 'error_vel_sigma_seq')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '1000seq', 'error_att_sigma_seq')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000seq', 'error_acc_bias_sigma_seq')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000seq', 'error_rate_bias_sigma_seq')
     
     ## Sequential timings
-
+    
     print("\nEllapsed time for sequential: ", np.round(elapsed_sequential,3))
     print("Summed runtime used in prediction module: ", np.round(total_elapsed_pred_timer_sequential,3), "seconds")
     print("Portion of runtime prediction module occupies: ", np.round(total_elapsed_pred_timer_sequential/elapsed_sequential*100,3),"%")
     print("Summed runtime used in estimation module: ", np.round(total_elapsed_est_timer_sequential,3), "seconds")
     print("Portion of runtime estimation module occupies: ", np.round(total_elapsed_est_timer_sequential/elapsed_sequential*100,3),"%")
-  
+
 
     average_time_sequential = np.round(np.average(elapsed_sequential),3)
     print("\nAverage time for sequential elapsed: ", average_time_sequential, "seconds")
@@ -373,8 +461,21 @@ if (use_sequential_pseudoranges):
     average_elapsed_est_timer_sequential = np.round(np.average(total_elapsed_est_timer_sequential),3)
     print("Average runtime for prediction module: ", average_elapsed_pred_timer_sequential, ", where average occupies =", np.round(average_elapsed_pred_timer_sequential/average_time_sequential*100,3), "% " "relative to total time")
     print("Average runtime for estimation module: ", average_elapsed_est_timer_sequential, ", where average occupies =", np.round(average_elapsed_est_timer_sequential/average_time_sequential*100,3), "% " "relative to total time")
-# %%
-if (use_UDU):
+    
+    with open('../runtimes.txt', 'a') as frt:
+        frt.write("\n")
+        frt.writelines("\nEllapsed time for batch:" + str(np.round(elapsed_sequential,3)))
+        frt.writelines("\nSummed runtime used in prediction module: " + str(np.round(total_elapsed_pred_timer_sequential,3)) + "seconds")
+        frt.writelines("\nPortion of runtime prediction module occupies: " + str(np.round(total_elapsed_pred_timer_sequential/elapsed_sequential*100,3)) + "%")
+        frt.writelines("\nSummed runtime used in estimation module: " + str(np.round(total_elapsed_est_timer_sequential,3)) + "seconds")
+        frt.writelines("\nPortion of runtime estimation module occupies: " + str(np.round(total_elapsed_est_timer_sequential/elapsed_sequential*100,3)) + "%")
+        frt.write("\n")
+        frt.writelines("\nAverage time for batch elapsed: " +  str(average_time_sequential) + "seconds")
+        frt.writelines("\nAverage runtime for prediction module: " + str(average_elapsed_pred_timer_sequential) + ", where average occupies =" + str(np.round(average_elapsed_pred_timer_sequential/average_time_sequential*100,3)) + "% " "relative to total time")
+        frt.writelines("\nAverage runtime for estimation module: " + str(average_elapsed_est_timer_sequential) + ", where average occupies =" + str(np.round(average_elapsed_est_timer_sequential/average_time_sequential*100,3)) + "% " "relative to total time")
+    frt.close()
+    
+    #if (use_UDU):
     for i in range(num_sims):  
         # timeit.timeit()
         print("Using sequential pseudoranges with UDU Propagation. Run number: ", i+1)
@@ -404,13 +505,46 @@ if (use_UDU):
         total_elapsed_est_timer_UDU[i] = np.sum(elapsed_est_timer_UDU)
         
     #Plot the latest run and save figures
-    plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'udu', 'path_udu', x_true,)
-    plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, 'udu', 'path3d_udu', x_true,)
-    plot_error_pos_sigma(x_est, x_true, P_est, N, 'udu', 'error_pos_sigma_udu')
-    plot_error_vel_sigma(x_est, x_true, P_est, N, 'udu', 'error_vel_sigma_udu')
-    plot_error_att_sigma(x_est, x_true, P_est, N, 'udu', 'error_att_sigma_udu')
-    plot_error_acc_bias_sigma(x_est, x_true, P_est, N, 'udu', 'error_acc_bias_sigma_udu')  
-    plot_error_rate_bias_sigma(x_est, x_true, P_est, N, 'udu', 'error_rate_bias_sigma_udu')
+    if (N == 10/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10udu', 'path_udu', x_true,)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10udu', 'path3d_udu', x_true,)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '10udu', 'error_pos_sigma_udu')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '10udu', 'error_vel_sigma_udu')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '10udu', 'error_att_sigma_udu')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '10udu', 'error_acc_bias_sigma_udu')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '10udu', 'error_rate_bias_sigma_udu')
+    if (N == 50/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50udu', 'path_udu', x_true,)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50udu', 'path3d_udu', x_true,)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '50udu', 'error_pos_sigma_udu')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '50udu', 'error_vel_sigma_udu')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '50udu', 'error_att_sigma_udu')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '50udu', 'error_acc_bias_sigma_udu')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '50udu', 'error_rate_bias_sigma_udu')
+    if (N == 100/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100udu', 'path_udu', x_true,)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100udu', 'path3d_udu', x_true,)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '100udu', 'error_pos_sigma_udu')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '100udu', 'error_vel_sigma_udu')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '1000udu', 'error_att_sigma_udu')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000udu', 'error_acc_bias_sigma_udu')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000udu', 'error_rate_bias_sigma_udu')
+    if (N == 600/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600udu', 'path_udu', x_true,)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600udu', 'path3d_udu', x_true,)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '600udu', 'error_pos_sigma_udu')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '600udu', 'error_vel_sigma_udu')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '600udu', 'error_att_sigma_udu')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '600udu', 'error_acc_bias_sigma_udu')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '600udu', 'error_rate_bias_sigma_udu')
+    if (N == 1000/dt):
+        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000udu', 'path_udu', x_true,)
+        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000udu', 'path3d_udu', x_true,)
+        plot_error_pos_sigma(x_est, x_true, P_est, N, '1000udu', 'error_pos_sigma_udu')
+        plot_error_vel_sigma(x_est, x_true, P_est, N, '1000udu', 'error_vel_sigma_udu')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '1000udu', 'error_att_sigma_udu')
+        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000udu', 'error_acc_bias_sigma_udu')  
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000udu', 'error_rate_bias_sigma_udu')
     ## UDU timings
 
     print("\nEllapsed time for UDU: ",  np.round(elapsed_UDU,3))
@@ -426,22 +560,105 @@ if (use_UDU):
     print("Average runtime for prediction module in UDU: ", average_elapsed_pred_timer_UDU, ", where average occupies =",  np.round(average_elapsed_pred_timer_UDU/average_time_UDU*100,3), "% " "relative to total time")
     print("Average runtime for estimation module in UDU: ", average_elapsed_est_timer_UDU, ", where average occupies =",  np.round(average_elapsed_est_timer_UDU/average_time_UDU*100,3), "% " "relative to total time")
 
+
+    with open('../runtimes.txt', 'a') as frt:
+        frt.write("\n")
+        frt.writelines("\nEllapsed time for batch:" + str(np.round(elapsed_UDU,3)))
+        frt.writelines("\nSummed runtime used in prediction module: " + str(np.round(total_elapsed_pred_timer_UDU,3)) + "seconds")
+        frt.writelines("\nPortion of runtime prediction module occupies: " + str(np.round(total_elapsed_pred_timer_UDU/elapsed_UDU*100,3)) + "%")
+        frt.writelines("\nSummed runtime used in estimation module: " + str(np.round(total_elapsed_est_timer_UDU,3)) + "seconds")
+        frt.writelines("\nPortion of runtime estimation module occupies: " + str(np.round(total_elapsed_est_timer_UDU/elapsed_UDU*100,3)) + "%")
+        frt.write("\n")
+        frt.writelines("\nAverage time for batch elapsed: " +  str(elapsed_UDU) + "seconds")
+        frt.writelines("\nAverage runtime for prediction module: " + str(average_elapsed_pred_timer_UDU) + ", where average occupies =" + str(np.round(average_elapsed_pred_timer_UDU/average_time_UDU*100,3)) + "% " "relative to total time")
+        frt.writelines("\nAverage runtime for estimation module: " + str(average_elapsed_est_timer_UDU) + ", where average occupies =" + str(np.round(average_elapsed_est_timer_UDU/average_time_UDU*100,3)) + "% " "relative to total time")
+    frt.close()
     
-# %%
-## Relative relations
-if (use_batch_pseudoranges & use_sequential_pseudoranges):
-    print("\nAverage Relative speedup of batch vs sequential: ",  np.round((average_time_batch - average_time_sequential)/average_time_batch*100,3),"%")
-    print("Average Relative speedup of pred module in batch vs sequential: ",  np.round((average_elapsed_pred_timer_batch - average_elapsed_pred_timer_sequential)/average_elapsed_pred_timer_batch*100,3), "%")
-    print("Average Relative speedup of est module in batch vs sequential: ",  np.round((average_elapsed_est_timer_batch - average_elapsed_est_timer_sequential)/average_elapsed_est_timer_batch*100,3), "%")
 
-if (use_batch_pseudoranges & use_UDU):
-    print("\nAverage Relative speedup of batch vs UDU-sequential: ",  np.round((average_time_batch - average_time_UDU)/average_time_batch*100,3),"%")
-    print("Average Relative speedup of pred module in batch vs UDU-sequential: ",  np.round((average_elapsed_pred_timer_batch - average_elapsed_pred_timer_UDU)/average_elapsed_pred_timer_batch*100,3), "%")
-    print("Average Relative speedup of est module in batch vs UDU-sequential: ",  np.round((average_elapsed_est_timer_batch - average_elapsed_est_timer_UDU)/average_elapsed_est_timer_batch*100,3), "%")
+    ## Relative relations
+    if (use_batch_pseudoranges & use_sequential_pseudoranges):
+        print("\nAverage Relative speedup of batch vs sequential: ",  np.round((average_time_batch - average_time_sequential)/average_time_batch*100,3),"%")
+        print("Average Relative speedup of pred module in batch vs sequential: ",  np.round((average_elapsed_pred_timer_batch - average_elapsed_pred_timer_sequential)/average_elapsed_pred_timer_batch*100,3), "%")
+        print("Average Relative speedup of est module in batch vs sequential: ",  np.round((average_elapsed_est_timer_batch - average_elapsed_est_timer_sequential)/average_elapsed_est_timer_batch*100,3), "%")
+        
+        with open('../runtimes.txt', 'a') as frt:
+            frt.write("\n")
+            frt.writelines("\n\nAverage Relative speedup of batch vs sequential: " +  str(np.round((average_time_batch - average_time_sequential)/average_time_batch*100,3)) + "%")
+            frt.writelines("\nAverage Relative speedup of pred module in batch vs sequential: " +  str(np.round((average_elapsed_pred_timer_batch - average_elapsed_pred_timer_sequential)/average_elapsed_pred_timer_batch*100,3)) + "%")
+            frt.writelines("\nAverage Relative speedup of est module in batch vs sequential: " +  str(np.round((average_elapsed_est_timer_batch - average_elapsed_est_timer_sequential)/average_elapsed_est_timer_batch*100,3)) + "%")
+        frt.close()
 
-if (use_UDU & use_sequential_pseudoranges):
-    print("\nAverage Relative speedup of sequential vs UDU-sequential: ",  np.round((average_time_sequential - average_time_UDU)/average_time_sequential*100,3),"%")
-    print("Average Relative speedup of pred module in sequential vs UDU-sequential: ",  np.round((average_elapsed_pred_timer_sequential - average_elapsed_pred_timer_UDU)/average_elapsed_pred_timer_sequential*100,3), "%")
-    print("Average Relative speedup of est module in  sequential vs UDU-sequential: ",  np.round((average_elapsed_est_timer_sequential - average_elapsed_est_timer_UDU)/average_elapsed_est_timer_sequential*100,3), "%")
-# %% Plots and stuff                           
+    if (use_batch_pseudoranges & use_UDU):
+        print("\nAverage Relative speedup of batch vs UDU-sequential: ",  np.round((average_time_batch - average_time_UDU)/average_time_batch*100,3),"%")
+        print("Average Relative speedup of pred module in batch vs UDU-sequential: ",  np.round((average_elapsed_pred_timer_batch - average_elapsed_pred_timer_UDU)/average_elapsed_pred_timer_batch*100,3), "%")
+        print("Average Relative speedup of est module in batch vs UDU-sequential: ",  np.round((average_elapsed_est_timer_batch - average_elapsed_est_timer_UDU)/average_elapsed_est_timer_batch*100,3), "%")
+        
+        with open('../runtimes.txt', 'a') as frt:
+            frt.write("\n")
+            frt.writelines("\n\nAverage Relative speedup of batch vs UDU-sequential: " +  str(np.round((average_time_batch - average_time_UDU)/average_time_batch*100,3)) + "%")
+            frt.writelines("\nAverage Relative speedup of pred module in batch vs UDU-sequential: " +  str(np.round((average_elapsed_pred_timer_batch - average_elapsed_pred_timer_UDU)/average_elapsed_pred_timer_batch*100,3)) + "%")
+            frt.writelines("\nAverage Relative speedup of est module in batch vs UDU-sequential: " +  str(np.round((average_elapsed_est_timer_batch - average_elapsed_est_timer_UDU)/average_elapsed_est_timer_batch*100,3)) + "%")
+        frt.close()
+
+    if (use_UDU & use_sequential_pseudoranges):
+        print("\nAverage Relative speedup of sequential vs UDU-sequential: ",  np.round((average_time_sequential - average_time_UDU)/average_time_sequential*100,3),"%")
+        print("Average Relative speedup of pred module in sequential vs UDU-sequential: ",  np.round((average_elapsed_pred_timer_sequential - average_elapsed_pred_timer_UDU)/average_elapsed_pred_timer_sequential*100,3), "%")
+        print("Average Relative speedup of est module in  sequential vs UDU-sequential: ",  np.round((average_elapsed_est_timer_sequential - average_elapsed_est_timer_UDU)/average_elapsed_est_timer_sequential*100,3), "%")
+        with open('../runtimes.txt', 'a') as frt:
+            frt.write("\n")
+            frt.writelines("\n\nAverage Relative speedup of sequential vs UDU-sequential: " +  str(np.round((average_time_sequential - average_time_UDU)/average_time_sequential*100,3)) + "%")
+            frt.writelines("\nAverage Relative speedup of pred module in sequential vs UDU-sequential: " +  str(np.round((average_elapsed_pred_timer_sequential - average_elapsed_pred_timer_UDU)/average_elapsed_pred_timer_sequential*100,3)) + "%")
+            frt.writelines("\nAverage Relative speedup of est module in sequential vs UDU-sequential: " +  str(np.round((average_elapsed_est_timer_sequential - average_elapsed_est_timer_UDU)/average_elapsed_est_timer_sequential*100,3)) + "%")
+        frt.close()
+
+        
+    if (use_batch_pseudoranges & use_sequential_pseudoranges & use_UDU):
+        if (N ==10/dt):
+            plot_timing_scatter('timing10','1Total_elapsed_box','total',elapsed_batch,elapsed_sequential,elapsed_UDU)
+            plot_timing_scatter('timing10','1Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+            plot_timing_scatter('timing10','1Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)
+        if (N ==50/dt):
+            plot_timing_scatter('timing50','1Total_elapsed_box','total',elapsed_batch,elapsed_sequential,elapsed_UDU)
+            plot_timing_scatter('timing50','1Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+            plot_timing_scatter('timing50','1Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)
+            
+        if (N ==100/dt):
+            plot_timing_scatter('timing100','1Total_elapsed_box','total',elapsed_batch,elapsed_sequential,elapsed_UDU)
+            plot_timing_scatter('timing100','1Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+            plot_timing_scatter('timing100','1Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
+            
+        if (N ==600/dt):
+            plot_timing_scatter('timing600','1Total_elapsed_box','total',elapsed_batch,elapsed_sequential,elapsed_UDU)
+            plot_timing_scatter('timing600','1Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+            plot_timing_scatter('timing600','1Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
+            
+        if (N ==1000/dt):
+            plot_timing_scatter('timing1000','1Total_elapsed_box','total',elapsed_batch,elapsed_sequential,elapsed_UDU)
+            plot_timing_scatter('timing1000','1Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+            plot_timing_scatter('timing1000','1Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                                
+
+    if (use_batch_pseudoranges & use_sequential_pseudoranges):
+        if (N ==10/dt):
+            plot_timing_scatter2('timing10','2Total_elapsed_box','total',elapsed_batch,elapsed_sequential)
+            plot_timing_scatter2('timing10','2Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+            plot_timing_scatter2('timing10','2Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)   
+        if (N ==50/dt):
+            plot_timing_scatter2('timing50','2Total_elapsed_box','total',elapsed_batch,elapsed_sequential)
+            plot_timing_scatter2('timing50','2Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+            plot_timing_scatter2('timing50','2Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                                
+        if (N ==100/dt):
+            plot_timing_scatter2('timing100','2Total_elapsed_box','total',elapsed_batch,elapsed_sequential)
+            plot_timing_scatter2('timing100','2Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+            plot_timing_scatter2('timing100','2Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
+        if (N ==600/dt):
+            plot_timing_scatter2('timing600','2Total_elapsed_box','total',elapsed_batch,elapsed_sequential)
+            plot_timing_scatter2('timing600','2Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+            plot_timing_scatter2('timing600','2Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
+        if (N ==1000/dt):
+            plot_timing_scatter2('timing1000','2Total_elapsed_box','total',elapsed_batch,elapsed_sequential)
+            plot_timing_scatter2('timing1000','2Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+            plot_timing_scatter2('timing1000','2Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
+            
+
+
 
