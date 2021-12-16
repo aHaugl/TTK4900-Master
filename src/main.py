@@ -6,7 +6,7 @@ turn based on ESKF project in TTK4550 fall 2020
 
 """
 
-# %% 
+# %%
 from plotter import plot_NEES, plot_NIS, plot_angle, plot_error_pos_sigma, plot_error_vel_sigma, plot_path, state_error_plots
 from typing import Tuple, Sequence, Any
 from matplotlib import pyplot as plt
@@ -208,11 +208,11 @@ use_UDU: bool = True
 # use_UDU: bool = False
 
 num_beacons = len(beacon_location)
-num_sims = 2
+num_sims = 200
 
 # %% Run estimation for
 #Number of seconds of simulation to run. len(timeIMU) decides max
-N_list: int = [int(10/dt), int(50/dt)]#, int(100/dt), int(600/dt), int(1000/dt)]
+N_list: int = [int(600/dt), int(1000/dt)]
 # N_list: int = [int(1000/dt)]
 # N: int = int(10/dt) 
 # N: int = int(50/dt)
@@ -335,7 +335,7 @@ for i in range(len(N_list)):
         plot_error_vel_sigma(x_est, x_true, P_est, N, '600batch', 'error_vel_sigma_batch')
         plot_error_att_sigma(x_est, x_true, P_est, N, '600batch', 'error_att_sigma_batch')
         plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '600batch', 'error_acc_bias_sigma_batch')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '60batch', 'error_rate_bias_sigma_batch')
+        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '600batch', 'error_rate_bias_sigma_batch')
         
     if (N == 1000/dt):
         plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000batch', 'path_batch',x_true)
@@ -434,7 +434,7 @@ for i in range(len(N_list)):
         plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600seq', 'path3d_seq', x_true)
         plot_error_pos_sigma(x_est, x_true, P_est, N, '600seq', 'error_pos_sigma_seq')
         plot_error_vel_sigma(x_est, x_true, P_est, N, '600seq', 'error_vel_sigma_seq')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '6006seq', 'error_att_sigma_seq')
+        plot_error_att_sigma(x_est, x_true, P_est, N, '600seq', 'error_att_sigma_seq')
         plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '600seq', 'error_acc_bias_sigma_seq')  
         plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '600seq', 'error_rate_bias_sigma_seq')
     if (N == 1000/dt):
@@ -455,6 +455,7 @@ for i in range(len(N_list)):
     print("Portion of runtime estimation module occupies: ", np.round(total_elapsed_est_timer_sequential/elapsed_sequential*100,3),"%")
 
 
+
     average_time_sequential = np.round(np.average(elapsed_sequential),3)
     print("\nAverage time for sequential elapsed: ", average_time_sequential, "seconds")
     average_elapsed_pred_timer_sequential = np.round(np.average(total_elapsed_pred_timer_sequential),3)
@@ -464,13 +465,13 @@ for i in range(len(N_list)):
     
     with open('../runtimes.txt', 'a') as frt:
         frt.write("\n")
-        frt.writelines("\nEllapsed time for batch:" + str(np.round(elapsed_sequential,3)))
+        frt.writelines("\nEllapsed time for sequential:" + str(np.round(elapsed_sequential,3)))
         frt.writelines("\nSummed runtime used in prediction module: " + str(np.round(total_elapsed_pred_timer_sequential,3)) + "seconds")
         frt.writelines("\nPortion of runtime prediction module occupies: " + str(np.round(total_elapsed_pred_timer_sequential/elapsed_sequential*100,3)) + "%")
         frt.writelines("\nSummed runtime used in estimation module: " + str(np.round(total_elapsed_est_timer_sequential,3)) + "seconds")
         frt.writelines("\nPortion of runtime estimation module occupies: " + str(np.round(total_elapsed_est_timer_sequential/elapsed_sequential*100,3)) + "%")
         frt.write("\n")
-        frt.writelines("\nAverage time for batch elapsed: " +  str(average_time_sequential) + "seconds")
+        frt.writelines("\nAverage time for sequential elapsed: " +  str(average_time_sequential) + "seconds")
         frt.writelines("\nAverage runtime for prediction module: " + str(average_elapsed_pred_timer_sequential) + ", where average occupies =" + str(np.round(average_elapsed_pred_timer_sequential/average_time_sequential*100,3)) + "% " "relative to total time")
         frt.writelines("\nAverage runtime for estimation module: " + str(average_elapsed_est_timer_sequential) + ", where average occupies =" + str(np.round(average_elapsed_est_timer_sequential/average_time_sequential*100,3)) + "% " "relative to total time")
     frt.close()
@@ -498,6 +499,7 @@ for i in range(len(N_list)):
                             use_GNSSaccuracy=False, doGNSS=True,
                             debug=False
                             )
+        
         elapsed_UDU[i] = time.time() - t_UDU[i]
         #Summed up time used in prediction steps
         total_elapsed_pred_timer_UDU[i] = np.sum(elapsed_pred_timer_UDU)
@@ -563,13 +565,13 @@ for i in range(len(N_list)):
 
     with open('../runtimes.txt', 'a') as frt:
         frt.write("\n")
-        frt.writelines("\nEllapsed time for batch:" + str(np.round(elapsed_UDU,3)))
+        frt.writelines("\nEllapsed time for UDU:" + str(np.round(elapsed_UDU,3)))
         frt.writelines("\nSummed runtime used in prediction module: " + str(np.round(total_elapsed_pred_timer_UDU,3)) + "seconds")
         frt.writelines("\nPortion of runtime prediction module occupies: " + str(np.round(total_elapsed_pred_timer_UDU/elapsed_UDU*100,3)) + "%")
         frt.writelines("\nSummed runtime used in estimation module: " + str(np.round(total_elapsed_est_timer_UDU,3)) + "seconds")
         frt.writelines("\nPortion of runtime estimation module occupies: " + str(np.round(total_elapsed_est_timer_UDU/elapsed_UDU*100,3)) + "%")
         frt.write("\n")
-        frt.writelines("\nAverage time for batch elapsed: " +  str(elapsed_UDU) + "seconds")
+        frt.writelines("\nAverage time for UDU elapsed: " +  str(average_time_UDU) + "seconds")
         frt.writelines("\nAverage runtime for prediction module: " + str(average_elapsed_pred_timer_UDU) + ", where average occupies =" + str(np.round(average_elapsed_pred_timer_UDU/average_time_UDU*100,3)) + "% " "relative to total time")
         frt.writelines("\nAverage runtime for estimation module: " + str(average_elapsed_est_timer_UDU) + ", where average occupies =" + str(np.round(average_elapsed_est_timer_UDU/average_time_UDU*100,3)) + "% " "relative to total time")
     frt.close()
@@ -615,49 +617,49 @@ for i in range(len(N_list)):
     if (use_batch_pseudoranges & use_sequential_pseudoranges & use_UDU):
         if (N ==10/dt):
             plot_timing_scatter('timing10','1Total_elapsed_box','total',elapsed_batch,elapsed_sequential,elapsed_UDU)
-            plot_timing_scatter('timing10','1Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-            plot_timing_scatter('timing10','1Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)
+            plot_timing_scatter('timing10','1Pred_elapsed_box','time upd module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+            plot_timing_scatter('timing10','1Est_elapsed_box','meas upd module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)
         if (N ==50/dt):
             plot_timing_scatter('timing50','1Total_elapsed_box','total',elapsed_batch,elapsed_sequential,elapsed_UDU)
-            plot_timing_scatter('timing50','1Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-            plot_timing_scatter('timing50','1Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)
+            plot_timing_scatter('timing50','1Pred_elapsed_box','time upd module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+            plot_timing_scatter('timing50','1Est_elapsed_box','meas upd module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)
             
         if (N ==100/dt):
             plot_timing_scatter('timing100','1Total_elapsed_box','total',elapsed_batch,elapsed_sequential,elapsed_UDU)
-            plot_timing_scatter('timing100','1Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-            plot_timing_scatter('timing100','1Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
+            plot_timing_scatter('timing100','1Pred_elapsed_box','time upd module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+            plot_timing_scatter('timing100','1Est_elapsed_box','meas upd module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
             
         if (N ==600/dt):
             plot_timing_scatter('timing600','1Total_elapsed_box','total',elapsed_batch,elapsed_sequential,elapsed_UDU)
-            plot_timing_scatter('timing600','1Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-            plot_timing_scatter('timing600','1Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
+            plot_timing_scatter('timing600','1Pred_elapsed_box','time upd module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+            plot_timing_scatter('timing600','1Est_elapsed_box','meas upd module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
             
         if (N ==1000/dt):
             plot_timing_scatter('timing1000','1Total_elapsed_box','total',elapsed_batch,elapsed_sequential,elapsed_UDU)
-            plot_timing_scatter('timing1000','1Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-            plot_timing_scatter('timing1000','1Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                                
+            plot_timing_scatter('timing1000','1Pred_elapsed_box','time upd module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+            plot_timing_scatter('timing1000','1Est_elapsed_box','meas upd module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                                
 
     if (use_batch_pseudoranges & use_sequential_pseudoranges):
         if (N ==10/dt):
             plot_timing_scatter2('timing10','2Total_elapsed_box','total',elapsed_batch,elapsed_sequential)
-            plot_timing_scatter2('timing10','2Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
-            plot_timing_scatter2('timing10','2Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)   
+            plot_timing_scatter2('timing10','2Pred_elapsed_box','time upd module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+            plot_timing_scatter2('timing10','2Est_elapsed_box','meas upd module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)   
         if (N ==50/dt):
             plot_timing_scatter2('timing50','2Total_elapsed_box','total',elapsed_batch,elapsed_sequential)
-            plot_timing_scatter2('timing50','2Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
-            plot_timing_scatter2('timing50','2Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                                
+            plot_timing_scatter2('timing50','2Pred_elapsed_box','time upd module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+            plot_timing_scatter2('timing50','2Est_elapsed_box','meas upd module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                                
         if (N ==100/dt):
             plot_timing_scatter2('timing100','2Total_elapsed_box','total',elapsed_batch,elapsed_sequential)
-            plot_timing_scatter2('timing100','2Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
-            plot_timing_scatter2('timing100','2Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
+            plot_timing_scatter2('timing100','2Pred_elapsed_box','time upd module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+            plot_timing_scatter2('timing100','2Est_elapsed_box','meas upd module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
         if (N ==600/dt):
             plot_timing_scatter2('timing600','2Total_elapsed_box','total',elapsed_batch,elapsed_sequential)
-            plot_timing_scatter2('timing600','2Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
-            plot_timing_scatter2('timing600','2Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
+            plot_timing_scatter2('timing600','2Pred_elapsed_box','time upd module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+            plot_timing_scatter2('timing600','2Est_elapsed_box','meas upd module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
         if (N ==1000/dt):
             plot_timing_scatter2('timing1000','2Total_elapsed_box','total',elapsed_batch,elapsed_sequential)
-            plot_timing_scatter2('timing1000','2Pred_elapsed_box','time update module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
-            plot_timing_scatter2('timing1000','2Est_elapsed_box','measurement update module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
+            plot_timing_scatter2('timing1000','2Pred_elapsed_box','time upd module',total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+            plot_timing_scatter2('timing1000','2Est_elapsed_box','meas upd module',total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
             
 
 
