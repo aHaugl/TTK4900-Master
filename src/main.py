@@ -212,7 +212,7 @@ num_sims = 200
 
 # %% Run estimation for
 #Number of seconds of simulation to run. len(timeIMU) decides max
-N_list: int = [int(600/dt), int(1000/dt)]
+N_list: int = [int(1000/dt)]
 # N_list: int = [int(1000/dt)]
 # N: int = int(10/dt) 
 # N: int = int(50/dt)
@@ -223,8 +223,8 @@ N_list: int = [int(600/dt), int(1000/dt)]
 for i in range(len(N_list)): 
     N = N_list[i]
         
-    if(N == 1000/dt):
-        num_sims = 20
+    # if(N == 1000/dt):
+    #     num_sims = 2000
     print("N is " ,N)
     print("Duration is: ",N*dt)
     offset = 0
