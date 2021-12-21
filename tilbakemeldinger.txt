@@ -1,0 +1,91 @@
+Skille mellom antall målinger = størrelse på målingsrommet og tilstandrommet
+
+Diskutere at dersom vi hadde estimert flere imufeil og målesystembiaser (f.eks magnetometer, barometer) som klokkefeil i gnss så hadde det også blitt større forskjell.
+
+Separert statisk og dynamiske biaser (15+2*3*2) = 27, + 6 misalignment på acc og 3 på gyro + radio sin egen klokkefeil -> kan nå 30-40 tilstander
+
+Funnet en svakhet i den vanlig inverteringsmåte
+
+Struktur: Kunne vært annerledes
+	- Fristende med nominal, kinematics inne i eskf, men dette har egentlig ingenting inne her å gjøre. Ligningene havner inne der pga en 
+	- Dette hører mer heime i part 2 som strap down ligninger
+	- Savner en del om motivasjon for hvorfor dette er interessant
+	- Lenger litteraturstudier, Simon har kanskje en grei oppsummering. En hel side om dette. Visst det er åpenbart 
+	- Utvide bakgrunnen litt mer og nevne før best practices at man nevner QR og de andre metodene -> Kommer hederlig ut på dette punktet.
+	- Decide on a factorization metode -> vi må velge dette
+	- Reuse
+	- Evaluate
+	- Present and discuss
+	- Conclude your results and suggest further work
+
+
+IMU process noise:
+- h er ikkje definert
+- true kinematics kunne vært en annen plass
+- 3.7 kan regnes som stasjonær analyse på standadavviksform. Tallet i databladet bias instability ^2 * 2 /Ts og ta kvadratrota aav det = Q i kontinuerlig varians. Denne er spesial density.
+- 4.12 og 4.13: Store V gir ut transisjonsmatrisen Phi. Kall Phi før dette for F
+- Q = PDSMatrix ikkje continous time 
+- Phi er brukt korrekt i 4.16. Mangler V1 som transponert. 
+- Sampler man oftere så får man en større effekt fra spektraltetthenen. Men over et gitt tidsintervall så er det likt. Ved 1Hzprosesser så forsvinner de (ofte dårlig å bruke).
+
+4.2.4: 
+- Kommer litt ute av det blå, kanskje skrive om slik at målemodellen passer
+- Dersom gnss taes med: husk at 
+- I 4.2.4 skriv generic beacon measurement i stedefor gnss! Behold dette med gnss, men skriv det som et eksempel i stedefor. Beskriv korleis og korleis klokkefeilen ville blitt ein tilstand. Men siden vi jobber generisk... Sier vi at målingen er p + stø (4.23)
+- 4.3.1b mangler parantes
+- 5.4 sjekk align
+
+eq4.7: Endre steglengde fra T til Delta t. Omega_bar skal inneholde T. Omega * T = inkrimentell vinkel. sjekk linje 146 i latex
+
+Om UD-faktoriseringa: 
+Hyp: Får automatisk med en del features som symmetrisk kovariansmatrise osv. Det er antatt mer regnekraftig pga faktoriseringene, og får potensielt utslag på P. Litt manglende inngangshypotese her også. Vi tenkte ved inngangen at UDU skulle
+være raskere enn batch. En ting er åpenbart er å tenke at den er mer regnekrevende, men det som er usikkert er om det er verdt kjøretida for faktoriseringen. 
+Potensiell bedre nøyaktighet. Usikkert pga testplattformen er fp64 arkitektur. 
+
+Sluttkomposijson er at det ikkje er verdt det og at mitt oppsett er at det ikkje har noen effekt. Kanskje tilstandsrommet er mindre enn det som er mindre enn det som må for å få fram effekten. Her kan man sjekke om flere tilstander gjør det. klokkefeil osv
+Vi kan oppnå samme egenskaper med P på andre måter, vi kan få et annet utslag på en annen arkitektur. UDU ville fungert på alle plattformer, 
+
+Resultat: Kva er forskjellen på P mellom filterene, ha en tabell som viser P-resultater. Interessant å se på forskjellen på P etter tusen sekunder på de tre variasjonene. Diagonalelementene. Dersom denne er liten, så har vi kasta på en fancy algoritme
+på noe som kunne vært sekvensielt. Hadde vi hatt en arkitektur så kunne det vært annerledes. Returner den siste estimerte kovariansen som blir regnet. Antar at P skal være ganske lik. To felter: en er tallverdiene i diagonalen på std form, kolonne nummer
+to er forskjellen fra batchvis.
+
+FW: sammenligne med annen arkitektur. Skrive om arkitekturen som maskinvare og kompilator. 
+
+Si i starten: n = tilstandsrom = 15 og alle steder der det er tilstandsrom bruk 15
+
+	- Bedre med referansene enn å skrive D'Souza. Føler du for bare D'souza så legg ved sitasjonen (gjennomgående)
+
+Oppsummering
+Tydelige inngangshypoteser
+Fikse matematiske ting
+Presentere resultatene
+Diskutere de relativt hypotesene
+Konkludere
+Komme med FW
+Passe på at alle variable er forklart
+\list of todos
+Være klar på å presentere hypotesene og å svar på de! Forklar også hvorfor dette er interessant fordi det ikkje er selvsagt.
+
+
+Referanser: Sjekk ut om vi kan få NASA referansen og sjekk litt ut i bibtex-filtypene. Kanskje noe har skjedd feil der.
+Kan være lurt å legge inn noen tomme sider med tanke på binding. Oppgaveteksten bør komme på en odde side.
+
+tom side -> summary -> tom side -> preface -> tom side 
+Anbefalinger: Sjekke ut bindinger. 
+Alle kapitler starter på odde sider.
+Bytte om til book i stedefor article.
+
+Sjekke ut kva NTNU anbefaler om oppsett:
+
+Skal ha lik marg på den odde og partallsiden etter binding. Slik at oddesida vil ha større marg enn enn venstresida på partall.
+
+[16:02] Torleiv Håland Bryne
+\usepackage[twoside,bindingoffset=1cm,outer=2cm,inner=2cm,includefoot,bmargin=2cm, tmargin=2.5cm]
+{geometry}
+
+[16:02] Torleiv Håland Bryne
+\documentclass[b5paper,10pt,twoside,openright,onecolumn]{memoir}
+Viktig og godt resultat, spennende å se 
+Gleder seg til å se sluttresultatet, 
+
+
