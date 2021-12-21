@@ -315,7 +315,24 @@ beacon_location = np.array((
                            [5,55,0.5],
                            [0,60,1],
                            [20,70,0.5],
-                           [-20,70,1],))
+                           [-20,70,1],
+                           
+                           [30*2,-10,-0.5],
+                           [-10*2,0,0.3],
+                           [20*2,0,-0.3],
+                           [15*2,10,1],
+                           [20*2,15,1],
+                           [-30*2,20,5],
+                           [-15*2,25,3],
+                           [15*2,35,-0.8],
+                           [-5*2,40,0.5],
+                           [25*2,40,0.8],
+                           [10*2,50,-0.5],
+                           [5*2,55,0.5],
+                           [0*2,60,1],
+                           [20*2,70,0.5],
+                           [-20*2,70,1],
+                           ))
 
 print ("x_true[0]: \n", x_true[0])
 # with open("../data/simulation_params_comb_maneuver.mat","wb") as mat_file:
@@ -338,7 +355,7 @@ print ("x_true[0]: \n", x_true[0])
     # scipy.io.savemat(mat_file, {"vel_pred_test": vel_pred_test.T})
     # scipy.io.savemat(mat_file, {"pos_pred_test": pos_pred_test.T})
     # %%
-with open("../data/simulation_params_comb_maneuver_long_ver3.mat","wb") as mat_file:
+with open("../data/simulation_params_comb_maneuver_long_ver4.mat","wb") as mat_file:
     scipy.io.savemat(mat_file, {'leverarm': leverarm.T})
     scipy.io.savemat(mat_file, {'S_a': S_a.T})
     scipy.io.savemat(mat_file, {'S_g': S_g.T})

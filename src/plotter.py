@@ -306,7 +306,7 @@ def plot_path(t,N, beacon_location, GNSSk, z_GNSS, x_est, filterversion, figname
 
 
 
-def plot_timing_scatter(location, figname, plot_title, batch_time = None, seq_time = None, udu_time = None):
+def plot_timing_scatter(location, figname, plot_title, m, batch_time = None, seq_time = None, udu_time = None):
     fig = plt.figure()
     n = len(batch_time)
     labels = ['Batch', 'Sequential', 'UDU']
@@ -336,14 +336,14 @@ def plot_timing_scatter(location, figname, plot_title, batch_time = None, seq_ti
             
     plt.ylabel('Elapsed run time [s]')
     plt.grid()
-    plt.title('Filter variation run time for 'f"{plot_title}"', n = 'f"{n}")
+    plt.title(f"{plot_title}"', n = 'f"{n}"', m = 'f"{n}")
     plt.legend(['Batch average: 'f"{avg_data[0]}"' [s]', 'Seq average: 'f"{avg_data[1]}"' [s]', 'UDU average: 'f"{avg_data[2]}"' [s]'],loc='best', fancybox=True, shadow=True)
     fig.tight_layout()
     plt.savefig('../plots/'f"{location}"'/'f"{figname}"'.eps')
     plt.savefig('../plots/'f"{location}"'/'f"{figname}"'.png')
     plt.savefig('../plots/'f"{location}"'/'f"{figname}"'.pdf')
     
-def plot_timing_scatter2(location, figname, plot_title, batch_time = None, seq_time = None):
+def plot_timing_scatter2(location, figname, plot_title, m, batch_time = None, seq_time = None):
     fig = plt.figure()
     
     n = len(batch_time)
@@ -373,7 +373,8 @@ def plot_timing_scatter2(location, figname, plot_title, batch_time = None, seq_t
             
     plt.ylabel('Elapsed run time [s]')
     plt.grid()
-    plt.title('Filter variation run time for 'f"{plot_title}"', n = 'f"{n}")
+       
+    plt.title(f"{plot_title}"', n = 'f"{n}"', m = 'f"{n}")
     plt.legend(['Batch average: 'f"{avg_data[0]}"' [s]', 'Seq average: 'f"{avg_data[1]}"' [s]'],loc='best', fancybox=True, shadow=True)
     fig.tight_layout()
     plt.savefig('../plots/'f"{location}"'/'f"{figname}"'.eps')

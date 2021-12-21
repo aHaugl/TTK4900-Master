@@ -1710,3 +1710,275 @@ Portion of runtime estimation module occupies: [1.017 0.927 0.889 0.934 0.897 0.
 Average time for sequential elapsed: 141.439seconds
 Average runtime for prediction module: 139.368, where average occupies =98.536% relative to total time
 Average runtime for estimation module: 1.336, where average occupies =0.945% relative to total time
+
+Ellapsed time for UDU:[349.117 349.318 348.957 349.205 349.23  349.023 348.925 349.024 349.123
+ 349.011 348.802 349.512 348.811 349.564 348.762 349.099 349.222 349.125
+ 349.065 348.865 348.868 349.231 348.477 348.794 349.283 348.785 348.352
+ 348.929 348.495 348.915 348.742 348.787 348.455 348.344 348.617 348.402
+ 348.998 349.166 348.69  349.389 348.79  349.524 350.027 349.45  349.204
+ 349.076 349.066 348.794 348.247 348.826 348.88  348.013 348.825 348.496
+ 348.654 348.071 348.759 348.145 348.547 348.416 349.106 348.825 348.39
+ 344.025 348.361 348.459 348.763 348.036 348.302 347.753 348.731 348.849
+ 348.523 349.447 351.791 352.765 352.928 352.733 352.822 353.124 352.887
+ 352.627 352.324 352.651 352.579 352.265 352.353 352.464 352.777 352.505
+ 352.361 352.969 352.744 352.576 352.044 352.215 352.754 352.636 352.188
+ 352.012 352.498 352.536 352.899 353.545 352.273 352.44  352.025 352.645
+ 351.932 352.357 352.109 352.168 352.683 352.185 352.765 352.103 352.649
+ 352.051 352.143 352.221 352.143 352.453 351.483 352.002 352.572 351.934
+ 352.261 352.2   352.51  352.097 352.07  352.374 352.345 351.637 351.966
+ 351.744 351.792 351.856 352.344 352.071 351.955 352.436 352.173 352.113
+ 352.579 351.587 352.437 351.627 351.636 351.227 351.576 352.211 351.71
+ 352.632 351.501 351.666 351.27  351.392 351.54  351.944 352.145 352.096
+ 352.144 351.907 351.624 351.795 351.023 351.507 351.289 352.082 351.516
+ 351.266 351.415 351.402 352.447 351.637 351.513 351.766 351.449 351.321
+ 351.33  351.44  351.239 351.648 351.225 351.453 351.348 351.359 351.893
+ 351.922 351.196 351.499 351.387 351.611 351.488 351.446 351.33  350.897
+ 351.375 351.087]
+Summed runtime used in prediction module: [329.94  330.518 330.195 330.295 330.263 330.064 330.15  330.239 330.22
+ 330.365 329.689 330.611 329.743 330.214 329.901 330.199 330.467 330.251
+ 330.291 329.836 329.983 330.38  329.869 329.939 330.214 329.82  329.403
+ 329.781 329.937 329.882 329.553 329.821 329.37  329.274 329.639 329.375
+ 329.832 330.097 329.93  330.497 330.018 330.312 331.272 330.312 330.16
+ 330.221 329.928 329.916 329.14  329.846 329.97  329.035 329.96  329.635
+ 329.75  329.024 329.637 329.367 329.831 329.458 330.054 330.246 329.33
+ 325.169 329.231 329.653 329.808 329.253 329.316 328.528 329.773 329.99
+ 329.312 330.836 333.075 334.241 334.725 334.162 334.225 334.097 334.016
+ 333.9   333.617 333.946 333.986 333.639 333.522 333.735 334.332 333.691
+ 333.86  334.407 333.754 334.012 333.442 333.813 334.028 334.158 333.579
+ 333.409 333.815 333.933 334.162 334.715 333.6   333.486 333.358 334.088
+ 332.871 333.538 333.673 333.529 334.07  333.369 334.21  333.122 333.903
+ 333.373 333.107 333.637 333.44  334.049 333.004 333.424 333.665 333.238
+ 333.167 333.512 333.567 333.199 333.52  333.613 333.655 332.906 332.815
+ 333.109 333.257 333.146 333.79  333.86  333.385 333.309 333.67  333.163
+ 334.335 333.235 333.694 332.942 332.988 332.585 332.688 333.082 333.352
+ 333.279 332.434 332.96  332.227 332.04  332.809 333.147 333.395 333.801
+ 333.215 332.69  333.171 333.145 332.162 332.463 332.555 333.18  332.899
+ 332.553 332.229 332.704 333.454 332.938 332.922 332.942 332.57  332.498
+ 332.69  332.709 332.777 332.651 332.291 333.015 332.393 332.667 333.283
+ 333.176 332.554 332.303 332.284 332.772 332.554 332.893 333.155 331.869
+ 332.342 332.178]seconds
+Portion of runtime prediction module occupies: [94.507 94.618 94.624 94.585 94.569 94.568 94.619 94.618 94.586 94.657
+ 94.52  94.592 94.533 94.465 94.592 94.586 94.629 94.594 94.622 94.546
+ 94.587 94.602 94.66  94.594 94.541 94.562 94.56  94.512 94.675 94.545
+ 94.498 94.562 94.523 94.525 94.556 94.539 94.508 94.539 94.62  94.593
+ 94.618 94.503 94.642 94.523 94.547 94.599 94.518 94.588 94.513 94.559
+ 94.58  94.547 94.592 94.588 94.578 94.528 94.517 94.607 94.63  94.559
+ 94.543 94.674 94.529 94.519 94.509 94.603 94.565 94.603 94.549 94.472
+ 94.564 94.594 94.488 94.674 94.68  94.749 94.843 94.735 94.729 94.612
+ 94.652 94.689 94.69  94.696 94.726 94.713 94.656 94.686 94.772 94.663
+ 94.749 94.741 94.616 94.735 94.716 94.775 94.692 94.76  94.716 94.715
+ 94.7   94.723 94.69  94.674 94.699 94.622 94.697 94.738 94.584 94.659
+ 94.764 94.707 94.722 94.657 94.74  94.609 94.684 94.694 94.594 94.724
+ 94.689 94.778 94.743 94.722 94.637 94.688 94.579 94.694 94.626 94.633
+ 94.731 94.676 94.695 94.673 94.559 94.702 94.731 94.682 94.734 94.827
+ 94.724 94.573 94.746 94.618 94.826 94.78  94.682 94.686 94.697 94.692
+ 94.628 94.569 94.78  94.512 94.576 94.681 94.579 94.493 94.672 94.659
+ 94.675 94.804 94.624 94.539 94.752 94.699 94.627 94.582 94.667 94.631
+ 94.704 94.673 94.54  94.679 94.611 94.682 94.711 94.649 94.628 94.642
+ 94.694 94.67  94.744 94.598 94.609 94.754 94.605 94.68  94.711 94.673
+ 94.692 94.539 94.564 94.642 94.613 94.721 94.827 94.577 94.583 94.614]%
+Summed runtime used in estimation module: [18.189 17.939 17.882 17.978 18.011 18.061 17.82  17.812 17.911 17.76
+ 18.176 18.032 18.027 18.358 17.962 18.003 17.863 18.073 17.9   18.004
+ 17.958 17.949 17.802 17.997 18.14  17.998 17.955 18.251 17.697 17.962
+ 18.165 17.849 18.183 18.078 17.972 18.098 18.162 18.145 17.891 17.876
+ 17.727 18.258 17.872 18.149 18.22  18.017 18.081 17.988 18.1   17.81
+ 17.972 17.956 17.911 17.818 17.922 18.067 18.252 17.742 17.746 18.005
+ 18.083 17.669 18.022 17.94  18.168 17.927 17.978 17.93  18.069 18.244
+ 17.86  17.885 18.176 17.667 17.921 17.762 17.47  17.834 17.901 18.346
+ 18.053 18.002 17.801 17.969 17.836 17.902 18.006 17.913 17.711 17.958
+ 17.814 17.754 18.302 17.787 17.942 17.631 17.97  17.72  17.727 17.852
+ 17.979 17.753 18.024 18.026 17.926 18.002 17.866 17.673 18.123 18.125
+ 17.668 17.875 17.886 18.028 17.68  18.206 17.929 17.911 18.131 17.839
+ 18.009 17.649 17.718 17.708 18.044 17.909 18.284 17.872 18.069 18.097
+ 17.75  17.908 17.775 17.941 18.319 17.806 17.703 17.887 17.818 17.412
+ 17.745 18.335 17.797 18.088 17.452 17.524 17.999 17.894 17.976 17.839
+ 17.97  18.256 17.635 18.458 18.258 17.853 18.215 18.46  17.945 17.948
+ 17.886 17.361 18.03  18.319 17.763 17.764 18.053 18.075 17.883 17.864
+ 17.739 17.911 18.188 17.733 18.163 17.819 17.658 17.868 18.017 17.775
+ 17.848 17.923 17.475 18.025 18.17  17.563 18.105 17.94  17.782 17.924
+ 17.846 18.344 18.238 17.875 18.088 17.629 17.425 18.182 17.962 18.024]seconds
+Portion of runtime estimation module occupies: [5.21  5.136 5.124 5.148 5.157 5.175 5.107 5.103 5.13  5.089 5.211 5.159
+ 5.168 5.252 5.15  5.157 5.115 5.177 5.128 5.161 5.147 5.14  5.108 5.16
+ 5.193 5.16  5.154 5.231 5.078 5.148 5.209 5.118 5.218 5.19  5.155 5.194
+ 5.204 5.197 5.131 5.116 5.082 5.224 5.106 5.194 5.218 5.161 5.18  5.157
+ 5.198 5.106 5.151 5.16  5.135 5.113 5.14  5.191 5.233 5.096 5.091 5.168
+ 5.18  5.065 5.173 5.215 5.215 5.145 5.155 5.152 5.188 5.246 5.122 5.127
+ 5.215 5.056 5.094 5.035 4.95  5.056 5.074 5.195 5.116 5.105 5.052 5.096
+ 5.059 5.082 5.11  5.082 5.02  5.094 5.056 5.03  5.188 5.045 5.097 5.006
+ 5.094 5.025 5.033 5.072 5.1   5.036 5.107 5.099 5.089 5.108 5.075 5.012
+ 5.15  5.144 5.018 5.076 5.071 5.119 5.012 5.171 5.084 5.088 5.149 5.065
+ 5.114 5.008 5.041 5.031 5.118 5.089 5.19  5.074 5.126 5.14  5.042 5.082
+ 5.045 5.102 5.205 5.062 5.032 5.084 5.057 4.946 5.042 5.202 5.054 5.137
+ 4.95  4.984 5.107 5.089 5.112 5.079 5.111 5.183 5.014 5.234 5.194 5.077
+ 5.185 5.253 5.105 5.1   5.079 4.931 5.12  5.206 5.052 5.05  5.143 5.142
+ 5.091 5.074 5.046 5.099 5.176 5.046 5.153 5.067 5.024 5.08  5.126 5.059
+ 5.08  5.1   4.975 5.126 5.173 4.997 5.153 5.106 5.053 5.093 5.082 5.219
+ 5.19  5.084 5.146 5.016 4.96  5.182 5.112 5.134]%
+
+Average time for UDU elapsed: 350.819seconds
+Average runtime for prediction module: 332.008, where average occupies =94.638% relative to total time
+Average runtime for estimation module: 17.941, where average occupies =5.114% relative to total time
+
+
+Average Relative speedup of batch vs sequential: 0.457%
+Average Relative speedup of pred module in batch vs sequential: 0.405%
+Average Relative speedup of est module in batch vs sequential: 6.114%
+
+
+Average Relative speedup of batch vs UDU-sequential: -146.901%
+Average Relative speedup of pred module in batch vs UDU-sequential: -137.259%
+Average Relative speedup of est module in batch vs UDU-sequential: -1160.787%
+
+
+Average Relative speedup of sequential vs UDU-sequential: -148.036%
+Average Relative speedup of pred module in sequential vs UDU-sequential: -138.224%
+Average Relative speedup of est module in sequential vs UDU-sequential: -1242.889%
+ --------------------------------------------------------- 
+
+Number of beacons used: 30, Number of simulations ran through: 20, Simulation duration (seconds): 100.0
+
+Ellapsed time for batch:[14.369 14.66  14.388 14.493 14.359 14.312 14.394 14.394 14.277 14.366
+ 14.399 14.298 14.449 14.391 14.373 14.403 14.346 14.336 14.376 14.349]
+Summed runtime used in prediction module: [13.039 13.338 13.067 13.256 13.048 13.036 13.136 13.051 12.975 13.091
+ 13.062 12.975 13.093 13.05  13.042 13.13  13.053 13.091 13.023 13.099]seconds
+Portion of runtime prediction module occupies: [90.745 90.984 90.819 91.467 90.867 91.083 91.26  90.668 90.88  91.128
+ 90.717 90.747 90.612 90.684 90.737 91.165 90.987 91.313 90.586 91.286]%
+Summed runtime used in estimation module: [1.22  1.227 1.216 1.145 1.22  1.172 1.162 1.243 1.21  1.176 1.239 1.21
+ 1.261 1.246 1.222 1.154 1.217 1.159 1.258 1.145]seconds
+Portion of runtime estimation module occupies: [8.492 8.37  8.452 7.9   8.495 8.192 8.071 8.637 8.476 8.186 8.605 8.465
+ 8.728 8.656 8.504 8.013 8.484 8.085 8.754 7.977]%
+
+Average time for batch elapsed: 14.387seconds
+Average runtime for prediction module: 13.083, where average occupies =90.936% relative to total time
+Average runtime for estimation module: 1.205, where average occupies =8.376% relative to total time
+
+Ellapsed time for sequential:[14.204 14.158 14.131 14.055 14.064 14.121 14.077 14.114 14.277 14.049
+ 14.107 14.141 14.164 13.918 14.149 14.217 14.055 14.043 14.044 14.006]
+Summed runtime used in prediction module: [13.861 13.851 13.812 13.755 13.73  13.799 13.787 13.819 13.958 13.737
+ 13.794 13.848 13.779 13.558 13.838 13.897 13.717 13.747 13.739 13.71 ]seconds
+Portion of runtime prediction module occupies: [97.584 97.831 97.743 97.862 97.624 97.717 97.936 97.909 97.76  97.781
+ 97.78  97.923 97.28  97.418 97.804 97.749 97.598 97.889 97.825 97.883]%
+Summed runtime used in estimation module: [0.26  0.224 0.205 0.204 0.238 0.229 0.199 0.203 0.214 0.211 0.217 0.205
+ 0.24  0.256 0.214 0.213 0.253 0.193 0.213 0.21 ]seconds
+Portion of runtime estimation module occupies: [1.832 1.584 1.449 1.449 1.694 1.619 1.411 1.436 1.497 1.503 1.535 1.448
+ 1.692 1.84  1.51  1.497 1.798 1.371 1.516 1.499]%
+
+Average time for sequential elapsed: 14.105seconds
+Average runtime for prediction module: 13.787, where average occupies =97.745% relative to total time
+Average runtime for estimation module: 0.22, where average occupies =1.56% relative to total time
+
+Ellapsed time for UDU:[36.465 36.366 36.282 36.261 36.432 36.25  36.369 36.213 36.391 36.439
+ 36.469 36.403 36.439 36.489 36.422 36.378 36.373 36.465 36.526 36.391]
+Summed runtime used in prediction module: [32.626 32.585 32.502 32.591 32.694 32.52  32.603 32.453 32.7   32.744
+ 32.762 32.693 32.714 32.709 32.746 32.651 32.624 32.716 32.743 32.629]seconds
+Portion of runtime prediction module occupies: [89.472 89.604 89.58  89.879 89.739 89.712 89.644 89.616 89.857 89.86
+ 89.835 89.81  89.778 89.641 89.909 89.753 89.692 89.717 89.643 89.664]%
+Summed runtime used in estimation module: [3.706 3.647 3.655 3.553 3.61  3.592 3.646 3.625 3.564 3.583 3.58  3.584
+ 3.603 3.65  3.542 3.606 3.609 3.615 3.662 3.638]seconds
+Portion of runtime estimation module occupies: [10.162 10.028 10.073  9.799  9.909  9.91  10.026 10.011  9.793  9.832
+  9.815  9.845  9.886 10.004  9.726  9.912  9.923  9.915 10.027  9.998]%
+
+Average time for UDU elapsed: 36.391seconds
+Average runtime for prediction module: 32.65, where average occupies =89.72% relative to total time
+Average runtime for estimation module: 3.614, where average occupies =9.931% relative to total time
+
+
+Average Relative speedup of batch vs sequential: 1.96%
+Average Relative speedup of pred module in batch vs sequential: -5.381%
+Average Relative speedup of est module in batch vs sequential: 81.743%
+ --------------------------------------------------------- 
+
+Number of beacons used: 30, Number of simulations ran through: 1, Simulation duration (seconds): 100.0
+
+Ellapsed time for batch:[15.159]
+Summed runtime used in prediction module: [13.799]seconds
+Portion of runtime prediction module occupies: [91.027]%
+Summed runtime used in estimation module: [1.257]seconds
+Portion of runtime estimation module occupies: [8.289]%
+
+Average time for batch elapsed: 15.159seconds
+Average runtime for prediction module: 13.799, where average occupies =91.028% relative to total time
+Average runtime for estimation module: 1.257, where average occupies =8.292% relative to total time
+
+Ellapsed time for sequential:[14.393]
+Summed runtime used in prediction module: [14.073]seconds
+Portion of runtime prediction module occupies: [97.776]%
+Summed runtime used in estimation module: [0.223]seconds
+Portion of runtime estimation module occupies: [1.552]%
+
+Average time for sequential elapsed: 14.393seconds
+Average runtime for prediction module: 14.073, where average occupies =97.777% relative to total time
+Average runtime for estimation module: 0.223, where average occupies =1.549% relative to total time
+
+Ellapsed time for UDU:[36.363]
+Summed runtime used in prediction module: [32.588]seconds
+Portion of runtime prediction module occupies: [89.62]%
+Summed runtime used in estimation module: [3.637]seconds
+Portion of runtime estimation module occupies: [10.001]%
+
+Average time for UDU elapsed: 36.363seconds
+Average runtime for prediction module: 32.588, where average occupies =89.619% relative to total time
+Average runtime for estimation module: 3.637, where average occupies =10.002% relative to total time
+
+
+Average Relative speedup of batch vs sequential: 5.053%
+Average Relative speedup of pred module in batch vs sequential: -1.986%
+Average Relative speedup of est module in batch vs sequential: 82.259%
+
+
+Average Relative speedup of batch vs UDU-sequential: -139.877%
+Average Relative speedup of pred module in batch vs UDU-sequential: -136.162%
+Average Relative speedup of est module in batch vs UDU-sequential: -189.34%
+
+
+Average Relative speedup of sequential vs UDU-sequential: -152.644%
+Average Relative speedup of pred module in sequential vs UDU-sequential: -131.564%
+Average Relative speedup of est module in sequential vs UDU-sequential: -1530.942%
+ --------------------------------------------------------- 
+
+Number of beacons used: 30, Number of simulations ran through: 1, Simulation duration (seconds): 1000.0
+
+Ellapsed time for batch:[147.954]
+Summed runtime used in prediction module: [134.207]seconds
+Portion of runtime prediction module occupies: [90.708]%
+Summed runtime used in estimation module: [12.902]seconds
+Portion of runtime estimation module occupies: [8.72]%
+
+Average time for batch elapsed: 147.954seconds
+Average runtime for prediction module: 134.207, where average occupies =90.709% relative to total time
+Average runtime for estimation module: 12.902, where average occupies =8.72% relative to total time
+
+Ellapsed time for sequential:[136.552]
+Summed runtime used in prediction module: [133.304]seconds
+Portion of runtime prediction module occupies: [97.622]%
+Summed runtime used in estimation module: [2.363]seconds
+Portion of runtime estimation module occupies: [1.73]%
+
+Average time for sequential elapsed: 136.552seconds
+Average runtime for prediction module: 133.304, where average occupies =97.621% relative to total time
+Average runtime for estimation module: 2.363, where average occupies =1.73% relative to total time
+
+Ellapsed time for UDU:[365.524]
+Summed runtime used in prediction module: [328.522]seconds
+Portion of runtime prediction module occupies: [89.877]%
+Summed runtime used in estimation module: [35.883]seconds
+Portion of runtime estimation module occupies: [9.817]%
+
+Average time for UDU elapsed: 365.524seconds
+Average runtime for prediction module: 328.522, where average occupies =89.877% relative to total time
+Average runtime for estimation module: 35.883, where average occupies =9.817% relative to total time
+
+
+Average Relative speedup of batch vs sequential: 7.706%
+Average Relative speedup of pred module in batch vs sequential: 0.673%
+Average Relative speedup of est module in batch vs sequential: 81.685%
+
+
+Average Relative speedup of batch vs UDU-sequential: -147.052%
+Average Relative speedup of pred module in batch vs UDU-sequential: -144.788%
+Average Relative speedup of est module in batch vs UDU-sequential: -178.12%
+
+
+Average Relative speedup of sequential vs UDU-sequential: -167.681%
+Average Relative speedup of pred module in sequential vs UDU-sequential: -146.446%
+Average Relative speedup of est module in sequential vs UDU-sequential: -1418.536%
