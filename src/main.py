@@ -208,13 +208,15 @@ use_sequential_pseudoranges: bool = True
 use_UDU: bool = True
 # use_UDU: bool = False
 
+do_plot: bool = False
+
 num_beacons = len(beacon_location)
-num_sims = 200
+num_sims = 1
 
 # %% Run estimation for
 #Number of seconds of simulation to run. len(timeIMU) decides max
-N_list: int = [int(100/dt), int(1000/dt)]
-# N_list: int = [int(1000/dt)]
+# N_list: int = [int(len(timeIMU))]
+N_list: int = [int(1000/dt)]
 # N: int = int(10/dt) 
 # N: int = int(50/dt)
 # N: int = int(600/dt) 
@@ -228,6 +230,12 @@ for i in range(len(N_list)):
     #     num_sims = 2000
     print("N is " ,N)
     print("Duration is: ",N*dt)
+    print("Perform plots?")
+    
+    if (do_plot == 0):
+        print("No")
+    elif (do_plot):
+        print("Yes")
     offset = 0
     doGNSS: bool = True
     # rtol = 1e-05
@@ -266,11 +274,9 @@ for i in range(len(N_list)):
 
     print("Timerlists have been initialized")
 
-    
     print("\nNumber of beacons used: ", num_beacons)
     print("Number of simulations ran through", num_sims)
     print("Simulation duration (seconds): ", N*dt) 
-
     
     #if (use_batch_pseudoranges):
     for i in range(num_sims):  
@@ -304,91 +310,96 @@ for i in range(len(N_list)):
 
     
     #Plot the latest run and save figures
-    if (N == 10/dt):
-        
-        if(num_beacons == 30):
-            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10batch30m', 'path_batch30m',x_true)
-            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10batch30m', 'path3d_batch30m',x_true)
-            plot_error_pos_sigma(x_est, x_true, P_est, N, '10batch30m', 'error_pos_sigma_batch30m')
-            plot_error_vel_sigma(x_est, x_true, P_est, N, '10batch30m', 'error_vel_sigma_batch30m')
-            plot_error_att_sigma(x_est, x_true, P_est, N, '10batch30m', 'error_att_sigma_batch30m')
-            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '10batch30m', 'error_acc_bias_sigma_batch30m')  
-            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '10batch30m', 'error_rate_bias_sigma_batch30m')
-        
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10batch', 'path_batch',x_true)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10batch', 'path3d_batch',x_true)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '10batch', 'error_pos_sigma_batch')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '10batch', 'error_vel_sigma_batch')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '10batch', 'error_att_sigma_batch')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '10batch', 'error_acc_bias_sigma_batch')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '10batch', 'error_rate_bias_sigma_batch')
-        
-        
-        
-        
-    if (N == 50/dt):
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50batch', 'path_batch',x_true)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50batch', 'path3d_batch',x_true)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '50batch', 'error_pos_sigma_batch')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '50batch', 'error_vel_sigma_batch')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '50batch', 'error_att_sigma_batch')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '50batch', 'error_acc_bias_sigma_batch')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '50batch', 'error_rate_bias_sigma_batch')
-    if (N == 100/dt):
-        if(num_beacons == 30):
-            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100batch30m', '100path_batch30m',x_true)
-            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100batch30m', '100path3d_batch30m',x_true)
-            plot_error_pos_sigma(x_est, x_true, P_est, N, '100batch30m', 'error_pos_sigma_batch30m')
-            plot_error_vel_sigma(x_est, x_true, P_est, N, '100batch30m', 'error_vel_sigma_batch30m')
-            plot_error_att_sigma(x_est, x_true, P_est, N, '100batch30m', 'error_att_sigma_batch30m')
-            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '100batch30m', 'error_acc_bias_sigma_batch30m')  
-            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '100batch30m', 'error_rate_bias_sigma_batch30m')
-        
-        
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100batch', '100path_batch',x_true)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100batch', '100path3d_batch',x_true)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '100batch', 'error_pos_sigma_batch')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '100batch', 'error_vel_sigma_batch')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '100batch', 'error_att_sigma_batch')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '100batch', 'error_acc_bias_sigma_batch')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '100batch', 'error_rate_bias_sigma_batch')
-        
-    if (N == 600/dt):
-        if(num_beacons == 30):
-            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600batch30m', '600path_batch30m',x_true)
-            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600batch30m', '600path3d_batch30m',x_true)
-            plot_error_pos_sigma(x_est, x_true, P_est, N, '600batch30m', 'error_pos_sigma_batch30m')
-            plot_error_vel_sigma(x_est, x_true, P_est, N, '600batch30m', 'error_vel_sigma_batch30m')
-            plot_error_att_sigma(x_est, x_true, P_est, N, '600batch30m', 'error_att_sigma_batch30m')
-            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '600batch30m', 'error_acc_bias_sigma_batch30m')  
-            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '600batch30m', 'error_rate_bias_sigma_batch30m')
+    if(do_plot):
+        print("Plotting batch figures")
+        if (N == 10/dt):
             
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600batch', 'path_batch',x_true)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600batch', 'path3d_batch',x_true)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '600batch', 'error_pos_sigma_batch')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '600batch', 'error_vel_sigma_batch')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '600batch', 'error_att_sigma_batch')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '600batch', 'error_acc_bias_sigma_batch')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '600batch', 'error_rate_bias_sigma_batch')
-        
-    if (N == 1000/dt):
-        if(num_beacons == 30):
-            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000batch30m', '1000path_batch30m',x_true)
-            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000batch30m', '1000path3d_batch30m',x_true)
-            plot_error_pos_sigma(x_est, x_true, P_est, N, '1000batch30m', 'error_pos_sigma_batch30m')
-            plot_error_vel_sigma(x_est, x_true, P_est, N, '1000batch30m', 'error_vel_sigma_batch30m')
-            plot_error_att_sigma(x_est, x_true, P_est, N, '1000batch30m', 'error_att_sigma_batch30m')
-            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000batch30m', 'error_acc_bias_sigma_batch30m')  
-            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000batch30m', 'error_rate_bias_sigma_batch30m')
+            if(num_beacons == 30):
+                plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10batch30m', 'path_batch30m',x_true)
+                plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10batch30m', 'path3d_batch30m',x_true)
+                plot_error_pos_sigma(x_est, x_true, P_est, N, '10batch30m', 'error_pos_sigma_batch30m')
+                plot_error_vel_sigma(x_est, x_true, P_est, N, '10batch30m', 'error_vel_sigma_batch30m')
+                plot_error_att_sigma(x_est, x_true, P_est, N, '10batch30m', 'error_att_sigma_batch30m')
+                plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '10batch30m', 'error_acc_bias_sigma_batch30m')  
+                plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '10batch30m', 'error_rate_bias_sigma_batch30m')
             
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000batch', 'path_batch',x_true)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000batch', 'path3d_batch',x_true)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '1000batch', 'error_pos_sigma_batch')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '1000batch', 'error_vel_sigma_batch')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '1000batch', 'error_att_sigma_batch')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000batch', 'error_acc_bias_sigma_batch')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000batch', 'error_rate_bias_sigma_batch')
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10batch', 'path_batch',x_true)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10batch', 'path3d_batch',x_true)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '10batch', 'error_pos_sigma_batch')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '10batch', 'error_vel_sigma_batch')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '10batch', 'error_att_sigma_batch')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '10batch', 'error_acc_bias_sigma_batch')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '10batch', 'error_rate_bias_sigma_batch')
+            
+            
+            
+            
+        if (N == 50/dt):
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50batch', 'path_batch',x_true)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50batch', 'path3d_batch',x_true)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '50batch', 'error_pos_sigma_batch')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '50batch', 'error_vel_sigma_batch')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '50batch', 'error_att_sigma_batch')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '50batch', 'error_acc_bias_sigma_batch')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '50batch', 'error_rate_bias_sigma_batch')
+        if (N == 100/dt):
+            if(num_beacons == 30):
+                plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100batch30m', '100path_batch30m',x_true)
+                plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100batch30m', '100path3d_batch30m',x_true)
+                plot_error_pos_sigma(x_est, x_true, P_est, N, '100batch30m', 'error_pos_sigma_batch30m')
+                plot_error_vel_sigma(x_est, x_true, P_est, N, '100batch30m', 'error_vel_sigma_batch30m')
+                plot_error_att_sigma(x_est, x_true, P_est, N, '100batch30m', 'error_att_sigma_batch30m')
+                plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '100batch30m', 'error_acc_bias_sigma_batch30m')  
+                plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '100batch30m', 'error_rate_bias_sigma_batch30m')
+            
+            
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100batch', '100path_batch',x_true)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100batch', '100path3d_batch',x_true)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '100batch', 'error_pos_sigma_batch')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '100batch', 'error_vel_sigma_batch')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '100batch', 'error_att_sigma_batch')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '100batch', 'error_acc_bias_sigma_batch')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '100batch', 'error_rate_bias_sigma_batch')
+            
+        if (N == 600/dt):
+            if(num_beacons == 30):
+                plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600batch30m', '600path_batch30m',x_true)
+                plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600batch30m', '600path3d_batch30m',x_true)
+                plot_error_pos_sigma(x_est, x_true, P_est, N, '600batch30m', 'error_pos_sigma_batch30m')
+                plot_error_vel_sigma(x_est, x_true, P_est, N, '600batch30m', 'error_vel_sigma_batch30m')
+                plot_error_att_sigma(x_est, x_true, P_est, N, '600batch30m', 'error_att_sigma_batch30m')
+                plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '600batch30m', 'error_acc_bias_sigma_batch30m')  
+                plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '600batch30m', 'error_rate_bias_sigma_batch30m')
+                
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600batch', 'path_batch',x_true)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600batch', 'path3d_batch',x_true)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '600batch', 'error_pos_sigma_batch')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '600batch', 'error_vel_sigma_batch')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '600batch', 'error_att_sigma_batch')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '600batch', 'error_acc_bias_sigma_batch')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '600batch', 'error_rate_bias_sigma_batch')
+ 
+        if (N == 1000/dt):
+            if(num_beacons == 30):
+                plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000batch30m', '1000path_batch30m',x_true)
+                plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000batch30m', '1000path3d_batch30m',x_true)
+                plot_error_pos_sigma(x_est, x_true, P_est, N, '1000batch30m', 'error_pos_sigma_batch30m')
+                plot_error_vel_sigma(x_est, x_true, P_est, N, '1000batch30m', 'error_vel_sigma_batch30m')
+                plot_error_att_sigma(x_est, x_true, P_est, N, '1000batch30m', 'error_att_sigma_batch30m')
+                plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000batch30m', 'error_acc_bias_sigma_batch30m')  
+                plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000batch30m', 'error_rate_bias_sigma_batch30m')
+                
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000batch', 'path_batch',x_true)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000batch', 'path3d_batch',x_true)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '1000batch', 'error_pos_sigma_batch')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '1000batch', 'error_vel_sigma_batch')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '1000batch', 'error_att_sigma_batch')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000batch', 'error_acc_bias_sigma_batch')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000batch', 'error_rate_bias_sigma_batch')
     # Batch timings
+    
+    # print("Final = ", P_est[-1])
+    print("Diagonal P_batch= ", np.diag(P_est[-1]))   
           
     print("\nEllapsed time for batch: ", np.round(elapsed_batch,3))
     print("Summed runtime used in prediction module: ", np.round(total_elapsed_pred_timer_batch,3), "seconds")
@@ -415,6 +426,8 @@ for i in range(len(N_list)):
             frt.writelines("\nAverage time for batch elapsed: " +  str(average_time_batch) + "seconds")
             frt.writelines("\nAverage runtime for prediction module: " + str(average_elapsed_pred_timer_batch) + ", where average occupies =" + str(np.round(average_elapsed_pred_timer_batch/average_time_batch*100,3)) + "% " "relative to total time")
             frt.writelines("\nAverage runtime for estimation module: " + str(average_elapsed_est_timer_batch) + ", where average occupies =" + str(np.round(average_elapsed_est_timer_batch/average_time_batch*100,3)) + "% " "relative to total time")
+            frt.writelines("\nFinal batch covariance matrix = : " + str(P_est[-1]))
+            frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
     frt.close()
     
     #if (use_sequential_pseudoranges):
@@ -445,71 +458,75 @@ for i in range(len(N_list)):
         #Summed up time used in estimation steps
         total_elapsed_est_timer_sequential[i] = np.sum(elapsed_est_timer_sequential)
 
+    if(do_plot):
+        print("Plotting batch figures")
     #Plot the latest run and save figures
-    if (N == 10/dt):
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10seq', 'path_seq', x_true)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10seq', 'path3d_seq', x_true)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '10seq', 'error_pos_sigma_seq')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '10seq', 'error_vel_sigma_seq')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '10seq', 'error_att_sigma_seq')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '10seq', 'error_acc_bias_sigma_seq')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '10seq', 'error_rate_bias_sigma_seq')
-    
-    if (N == 50/dt):
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50seq', 'path_seq', x_true)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50seq', 'path3d_seq', x_true)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '50seq', 'error_pos_sigma_seq')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '50seq', 'error_vel_sigma_seq')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '50seq', 'error_att_sigma_seq')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '50seq', 'error_acc_bias_sigma_seq')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '50seq', 'error_rate_bias_sigma_seq')
-    
-    if (N == 100/dt):
-        if (num_beacons == 30):
-            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100seq30m', 'path_seq30m', x_true)
-            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100seq30m', 'path3d_seq30m', x_true)
-            plot_error_pos_sigma(x_est, x_true, P_est, N, '100seq30m', 'error_pos_sigma_seq')
-            plot_error_vel_sigma(x_est, x_true, P_est, N, '100seq30m', 'error_vel_sigma_seq')
-            plot_error_att_sigma(x_est, x_true, P_est, N, '100seq30m', 'error_att_sigma_seq')
-            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '100seq30m', 'error_acc_bias_sigma_seq')  
-            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '100seq30m', 'error_rate_bias_sigma_seq')
-                
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100seq', 'path_seq', x_true)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100seq', 'path3d_seq', x_true)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '100seq', 'error_pos_sigma_seq')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '100seq', 'error_vel_sigma_seq')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '100seq', 'error_att_sigma_seq')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '100seq', 'error_acc_bias_sigma_seq')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '100seq', 'error_rate_bias_sigma_seq')
+        if (N == 10/dt):
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10seq', 'path_seq', x_true)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10seq', 'path3d_seq', x_true)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '10seq', 'error_pos_sigma_seq')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '10seq', 'error_vel_sigma_seq')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '10seq', 'error_att_sigma_seq')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '10seq', 'error_acc_bias_sigma_seq')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '10seq', 'error_rate_bias_sigma_seq')
         
+        if (N == 50/dt):
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50seq', 'path_seq', x_true)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50seq', 'path3d_seq', x_true)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '50seq', 'error_pos_sigma_seq')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '50seq', 'error_vel_sigma_seq')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '50seq', 'error_att_sigma_seq')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '50seq', 'error_acc_bias_sigma_seq')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '50seq', 'error_rate_bias_sigma_seq')
         
-    if (N == 600/dt):
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600seq', 'path_seq', x_true)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600seq', 'path3d_seq', x_true)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '600seq', 'error_pos_sigma_seq')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '600seq', 'error_vel_sigma_seq')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '600seq', 'error_att_sigma_seq')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '600seq', 'error_acc_bias_sigma_seq')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '600seq', 'error_rate_bias_sigma_seq')
-    if (N == 1000/dt):
-        if (num_beacons == 30):
-            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000seq30m', 'path_seq30m', x_true)
-            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000seq30m', 'path3d_seq30m', x_true)
-            plot_error_pos_sigma(x_est, x_true, P_est, N, '1000seq30m', 'error_pos_sigma_seq')
-            plot_error_vel_sigma(x_est, x_true, P_est, N, '1000seq30m', 'error_vel_sigma_seq')
-            plot_error_att_sigma(x_est, x_true, P_est, N, '1000seq30m', 'error_att_sigma_seq')
-            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000seq30m', 'error_acc_bias_sigma_seq')  
-            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000seq30m', 'error_rate_bias_sigma_seq')
+        if (N == 100/dt):
+            if (num_beacons == 30):
+                plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100seq30m', 'path_seq30m', x_true)
+                plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100seq30m', 'path3d_seq30m', x_true)
+                plot_error_pos_sigma(x_est, x_true, P_est, N, '100seq30m', 'error_pos_sigma_seq')
+                plot_error_vel_sigma(x_est, x_true, P_est, N, '100seq30m', 'error_vel_sigma_seq')
+                plot_error_att_sigma(x_est, x_true, P_est, N, '100seq30m', 'error_att_sigma_seq')
+                plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '100seq30m', 'error_acc_bias_sigma_seq')  
+                plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '100seq30m', 'error_rate_bias_sigma_seq')
+                    
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100seq', 'path_seq', x_true)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100seq', 'path3d_seq', x_true)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '100seq', 'error_pos_sigma_seq')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '100seq', 'error_vel_sigma_seq')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '100seq', 'error_att_sigma_seq')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '100seq', 'error_acc_bias_sigma_seq')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '100seq', 'error_rate_bias_sigma_seq')
+            
+            
+        if (N == 600/dt):
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600seq', 'path_seq', x_true)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600seq', 'path3d_seq', x_true)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '600seq', 'error_pos_sigma_seq')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '600seq', 'error_vel_sigma_seq')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '600seq', 'error_att_sigma_seq')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '600seq', 'error_acc_bias_sigma_seq')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '600seq', 'error_rate_bias_sigma_seq')
+        if (N == 1000/dt):
+            if (num_beacons == 30):
+                plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000seq30m', 'path_seq30m', x_true)
+                plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000seq30m', 'path3d_seq30m', x_true)
+                plot_error_pos_sigma(x_est, x_true, P_est, N, '1000seq30m', 'error_pos_sigma_seq')
+                plot_error_vel_sigma(x_est, x_true, P_est, N, '1000seq30m', 'error_vel_sigma_seq')
+                plot_error_att_sigma(x_est, x_true, P_est, N, '1000seq30m', 'error_att_sigma_seq')
+                plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000seq30m', 'error_acc_bias_sigma_seq')  
+                plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000seq30m', 'error_rate_bias_sigma_seq')
+            
+            
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000seq', 'path_seq', x_true)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000seq', 'path3d_seq', x_true)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '1000seq', 'error_pos_sigma_seq')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '1000seq', 'error_vel_sigma_seq')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '1000seq', 'error_att_sigma_seq')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000seq', 'error_acc_bias_sigma_seq')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000seq', 'error_rate_bias_sigma_seq')
         
-        
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000seq', 'path_seq', x_true)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000seq', 'path3d_seq', x_true)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '1000seq', 'error_pos_sigma_seq')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '1000seq', 'error_vel_sigma_seq')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '1000seq', 'error_att_sigma_seq')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000seq', 'error_acc_bias_sigma_seq')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000seq', 'error_rate_bias_sigma_seq')
-    
+    # print("Final = ", P_est[-1])
+    print("Diagonal P_seq = ", np.diag(P_est[-1]))   
     ## Sequential timings
     
     print("\nEllapsed time for sequential: ", np.round(elapsed_sequential,3))
@@ -538,6 +555,8 @@ for i in range(len(N_list)):
         frt.writelines("\nAverage time for sequential elapsed: " +  str(average_time_sequential) + "seconds")
         frt.writelines("\nAverage runtime for prediction module: " + str(average_elapsed_pred_timer_sequential) + ", where average occupies =" + str(np.round(average_elapsed_pred_timer_sequential/average_time_sequential*100,3)) + "% " "relative to total time")
         frt.writelines("\nAverage runtime for estimation module: " + str(average_elapsed_est_timer_sequential) + ", where average occupies =" + str(np.round(average_elapsed_est_timer_sequential/average_time_sequential*100,3)) + "% " "relative to total time")
+        frt.writelines("\nFinal seq covariance matrix = : " + str(P_est[-1]))
+        frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
     frt.close()
     
     #if (use_UDU):
@@ -569,67 +588,68 @@ for i in range(len(N_list)):
         total_elapsed_pred_timer_UDU[i] = np.sum(elapsed_pred_timer_UDU)
         #Summed up time used in estimation steps
         total_elapsed_est_timer_UDU[i] = np.sum(elapsed_est_timer_UDU)
-        
-    #Plot the latest run and save figures
-    if (N == 10/dt):
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10udu', 'path_udu', x_true,)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10udu', 'path3d_udu', x_true,)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '10udu', 'error_pos_sigma_udu')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '10udu', 'error_vel_sigma_udu')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '10udu', 'error_att_sigma_udu')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '10udu', 'error_acc_bias_sigma_udu')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '10udu', 'error_rate_bias_sigma_udu')
-    if (N == 50/dt):
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50udu', 'path_udu', x_true,)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50udu', 'path3d_udu', x_true,)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '50udu', 'error_pos_sigma_udu')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '50udu', 'error_vel_sigma_udu')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '50udu', 'error_att_sigma_udu')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '50udu', 'error_acc_bias_sigma_udu')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '50udu', 'error_rate_bias_sigma_udu')
-    if (N == 100/dt):
-        if(num_beacons == 30):
-            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100udu30m', 'path_udu30m', x_true,)
-            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100udu30m', 'path3d_udu30m', x_true,)
-            plot_error_pos_sigma(x_est, x_true, P_est, N, '100udu30m', 'error_pos_sigma_udu')
-            plot_error_vel_sigma(x_est, x_true, P_est, N, '100udu30m', 'error_vel_sigma_udu')
-            plot_error_att_sigma(x_est, x_true, P_est, N, '100udu30m', 'error_att_sigma_udu')
-            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '100udu30m', 'error_acc_bias_sigma_udu')  
-            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '100udu30m', 'error_rate_bias_sigma_udu')
-            
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100udu', 'path_udu', x_true,)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100udu', 'path3d_udu', x_true,)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '100udu', 'error_pos_sigma_udu')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '100udu', 'error_vel_sigma_udu')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '100udu', 'error_att_sigma_udu')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '100udu', 'error_acc_bias_sigma_udu')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '100udu', 'error_rate_bias_sigma_udu')
-    if (N == 600/dt):
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600udu', 'path_udu', x_true,)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600udu', 'path3d_udu', x_true,)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '600udu', 'error_pos_sigma_udu')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '600udu', 'error_vel_sigma_udu')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '600udu', 'error_att_sigma_udu')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '600udu', 'error_acc_bias_sigma_udu')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '600udu', 'error_rate_bias_sigma_udu')
-    if (N == 1000/dt):
-        if(num_beacons == 30):
-            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000udu30m', 'path_udu30m', x_true,)
-            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000udu30m', 'path3d_udu30m', x_true,)
-            plot_error_pos_sigma(x_est, x_true, P_est, N, '1000udu30m', 'error_pos_sigma_udu')
-            plot_error_vel_sigma(x_est, x_true, P_est, N, '1000udu30m', 'error_vel_sigma_udu')
-            plot_error_att_sigma(x_est, x_true, P_est, N, '1000udu30m', 'error_att_sigma_udu')
-            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000udu30m', 'error_acc_bias_sigma_udu')  
-            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000udu30m', 'error_rate_bias_sigma_udu')
-            
-        plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000udu', 'path_udu', x_true,)
-        plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000udu', 'path3d_udu', x_true,)
-        plot_error_pos_sigma(x_est, x_true, P_est, N, '1000udu', 'error_pos_sigma_udu')
-        plot_error_vel_sigma(x_est, x_true, P_est, N, '1000udu', 'error_vel_sigma_udu')
-        plot_error_att_sigma(x_est, x_true, P_est, N, '1000udu', 'error_att_sigma_udu')
-        plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000udu', 'error_acc_bias_sigma_udu')  
-        plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000udu', 'error_rate_bias_sigma_udu')
-    ## UDU timings
+    if(do_plot):
+        print("Plotting batch figures")
+        #Plot the latest run and save figures
+        if (N == 10/dt):
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10udu', 'path_udu', x_true,)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '10udu', 'path3d_udu', x_true,)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '10udu', 'error_pos_sigma_udu')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '10udu', 'error_vel_sigma_udu')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '10udu', 'error_att_sigma_udu')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '10udu', 'error_acc_bias_sigma_udu')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '10udu', 'error_rate_bias_sigma_udu')
+        if (N == 50/dt):
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50udu', 'path_udu', x_true,)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '50udu', 'path3d_udu', x_true,)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '50udu', 'error_pos_sigma_udu')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '50udu', 'error_vel_sigma_udu')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '50udu', 'error_att_sigma_udu')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '50udu', 'error_acc_bias_sigma_udu')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '50udu', 'error_rate_bias_sigma_udu')
+        if (N == 100/dt):
+            if(num_beacons == 30):
+                plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100udu30m', 'path_udu30m', x_true,)
+                plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100udu30m', 'path3d_udu30m', x_true,)
+                plot_error_pos_sigma(x_est, x_true, P_est, N, '100udu30m', 'error_pos_sigma_udu')
+                plot_error_vel_sigma(x_est, x_true, P_est, N, '100udu30m', 'error_vel_sigma_udu')
+                plot_error_att_sigma(x_est, x_true, P_est, N, '100udu30m', 'error_att_sigma_udu')
+                plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '100udu30m', 'error_acc_bias_sigma_udu')  
+                plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '100udu30m', 'error_rate_bias_sigma_udu')
+                
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100udu', 'path_udu', x_true,)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '100udu', 'path3d_udu', x_true,)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '100udu', 'error_pos_sigma_udu')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '100udu', 'error_vel_sigma_udu')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '100udu', 'error_att_sigma_udu')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '100udu', 'error_acc_bias_sigma_udu')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '100udu', 'error_rate_bias_sigma_udu')
+        if (N == 600/dt):
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600udu', 'path_udu', x_true,)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '600udu', 'path3d_udu', x_true,)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '600udu', 'error_pos_sigma_udu')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '600udu', 'error_vel_sigma_udu')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '600udu', 'error_att_sigma_udu')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '600udu', 'error_acc_bias_sigma_udu')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '600udu', 'error_rate_bias_sigma_udu')
+        if (N == 1000/dt):
+            if(num_beacons == 30):
+                plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000udu30m', 'path_udu30m', x_true,)
+                plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000udu30m', 'path3d_udu30m', x_true,)
+                plot_error_pos_sigma(x_est, x_true, P_est, N, '1000udu30m', 'error_pos_sigma_udu')
+                plot_error_vel_sigma(x_est, x_true, P_est, N, '1000udu30m', 'error_vel_sigma_udu')
+                plot_error_att_sigma(x_est, x_true, P_est, N, '1000udu30m', 'error_att_sigma_udu')
+                plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000udu30m', 'error_acc_bias_sigma_udu')  
+                plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000udu30m', 'error_rate_bias_sigma_udu')
+                
+            plot_path(t,N, beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000udu', 'path_udu', x_true,)
+            plot_3Dpath(t, N,beacon_location[:num_beacons], GNSSk, z_GNSS, x_est, '1000udu', 'path3d_udu', x_true,)
+            plot_error_pos_sigma(x_est, x_true, P_est, N, '1000udu', 'error_pos_sigma_udu')
+            plot_error_vel_sigma(x_est, x_true, P_est, N, '1000udu', 'error_vel_sigma_udu')
+            plot_error_att_sigma(x_est, x_true, P_est, N, '1000udu', 'error_att_sigma_udu')
+            plot_error_acc_bias_sigma(x_est, x_true, P_est, N, '1000udu', 'error_acc_bias_sigma_udu')  
+            plot_error_rate_bias_sigma(x_est, x_true, P_est, N, '1000udu', 'error_rate_bias_sigma_udu')
+
 
     print("\nEllapsed time for UDU: ",  np.round(elapsed_UDU,3))
     print("Summed runtime used in UDU prediction module: ",  np.round(total_elapsed_pred_timer_UDU,3), "seconds")
@@ -644,7 +664,8 @@ for i in range(len(N_list)):
     print("Average runtime for prediction module in UDU: ", average_elapsed_pred_timer_UDU, ", where average occupies =",  np.round(average_elapsed_pred_timer_UDU/average_time_UDU*100,3), "% " "relative to total time")
     print("Average runtime for estimation module in UDU: ", average_elapsed_est_timer_UDU, ", where average occupies =",  np.round(average_elapsed_est_timer_UDU/average_time_UDU*100,3), "% " "relative to total time")
 
-
+    # print("Final = ", P_est[-1])
+    print("Diagonal P_UDU = ", np.diag(P_est[-1]))   
     with open('../runtimes.txt', 'a') as frt:
         frt.write("\n")
         frt.writelines("\nEllapsed time for UDU:" + str(np.round(elapsed_UDU,3)))
@@ -656,6 +677,9 @@ for i in range(len(N_list)):
         frt.writelines("\nAverage time for UDU elapsed: " +  str(average_time_UDU) + "seconds")
         frt.writelines("\nAverage runtime for prediction module: " + str(average_elapsed_pred_timer_UDU) + ", where average occupies =" + str(np.round(average_elapsed_pred_timer_UDU/average_time_UDU*100,3)) + "% " "relative to total time")
         frt.writelines("\nAverage runtime for estimation module: " + str(average_elapsed_est_timer_UDU) + ", where average occupies =" + str(np.round(average_elapsed_est_timer_UDU/average_time_UDU*100,3)) + "% " "relative to total time")
+        frt.writelines("\nFinal UDU covariance matrix = : " + str(P_est[-1]))
+        frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
+   
     frt.close()
     
 
@@ -695,77 +719,78 @@ for i in range(len(N_list)):
             frt.writelines("\nAverage Relative speedup of est module in sequential vs UDU-sequential: " +  str(np.round((average_elapsed_est_timer_sequential - average_elapsed_est_timer_UDU)/average_elapsed_est_timer_sequential*100,3)) + "%")
         frt.close()
 
-        
-    if (use_batch_pseudoranges & use_sequential_pseudoranges & use_UDU):
-        if (N ==10/dt):
-            plot_timing_scatter('timing10','1Total_elapsed_box','Total run time',num_beacons, elapsed_batch,elapsed_sequential,elapsed_UDU)
-            plot_timing_scatter('timing10','1Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-            plot_timing_scatter('timing10','1Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)
-        if (N ==50/dt):
-            plot_timing_scatter('timing50','1Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
-            plot_timing_scatter('timing50','1Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-            plot_timing_scatter('timing50','1Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)
-            
-        if (N ==100/dt):
-            if(num_beacons == 30):
-                plot_timing_scatter('30mtiming100','1Total_elapsed_box30m','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
-                plot_timing_scatter('30mtiming100','1Pred_elapsed_box30m','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-                plot_timing_scatter('30mtiming100','1Est_elapsed_box30m','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
-            
-            plot_timing_scatter('timing100','1Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
-            plot_timing_scatter('timing100','1Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-            plot_timing_scatter('timing100','1Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
-            
-        if (N ==600/dt):
-            plot_timing_scatter('timing600','1Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
-            plot_timing_scatter('timing600','1Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-            plot_timing_scatter('timing600','1Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
-            
-        if (N ==1000/dt):
-            if(num_beacons == 30):
-                plot_timing_scatter('30mtiming1000','1Total_elapsed_box30m','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
-                plot_timing_scatter('30mtiming1000','1Pred_elapsed_box30m','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-                plot_timing_scatter('30mtiming1000','1Est_elapsed_box30m','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
-            
+    if(do_plot):
+        print("Plotting batch figures")    
+        if (use_batch_pseudoranges & use_sequential_pseudoranges & use_UDU):
+            if (N ==10/dt):
+                plot_timing_scatter('timing10','1Total_elapsed_box','Total run time',num_beacons, elapsed_batch,elapsed_sequential,elapsed_UDU)
+                plot_timing_scatter('timing10','1Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+                plot_timing_scatter('timing10','1Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)
+            if (N ==50/dt):
+                plot_timing_scatter('timing50','1Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
+                plot_timing_scatter('timing50','1Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+                plot_timing_scatter('timing50','1Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)
+                
+            if (N ==100/dt):
+                if(num_beacons == 30):
+                    plot_timing_scatter('30mtiming100','1Total_elapsed_box30m','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
+                    plot_timing_scatter('30mtiming100','1Pred_elapsed_box30m','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+                    plot_timing_scatter('30mtiming100','1Est_elapsed_box30m','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
+                
+                plot_timing_scatter('timing100','1Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
+                plot_timing_scatter('timing100','1Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+                plot_timing_scatter('timing100','1Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
+                
+            if (N ==600/dt):
+                plot_timing_scatter('timing600','1Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
+                plot_timing_scatter('timing600','1Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+                plot_timing_scatter('timing600','1Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
+                
+            if (N ==1000/dt):
+                if(num_beacons == 30):
+                    plot_timing_scatter('30mtiming1000','1Total_elapsed_box30m','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
+                    plot_timing_scatter('30mtiming1000','1Pred_elapsed_box30m','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+                    plot_timing_scatter('30mtiming1000','1Est_elapsed_box30m','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
+                
 
-            plot_timing_scatter('timing1000','1Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
-            plot_timing_scatter('timing1000','1Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-            plot_timing_scatter('timing1000','1Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                                
+                plot_timing_scatter('timing1000','1Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
+                plot_timing_scatter('timing1000','1Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+                plot_timing_scatter('timing1000','1Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                                
 
-    if (use_batch_pseudoranges & use_sequential_pseudoranges):
-        if (N ==10/dt):
-            plot_timing_scatter2('timing10','2Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential)
-            plot_timing_scatter2('timing10','2Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
-            plot_timing_scatter2('timing10','2Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)   
-        if (N ==50/dt):
-            plot_timing_scatter2('timing50','2Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential)
-            plot_timing_scatter2('timing50','2Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
-            plot_timing_scatter2('timing50','2Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                                
-        if (N ==100/dt):
-            if(num_beacons == 30):
-                plot_timing_scatter('30mtiming100','2Total_elapsed_box30m','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
-                plot_timing_scatter('30mtiming100','2Pred_elapsed_box30m','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-                plot_timing_scatter('30mtiming100','2Est_elapsed_box30m','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
-            
+        if (use_batch_pseudoranges & use_sequential_pseudoranges):
+            if (N ==10/dt):
+                plot_timing_scatter2('timing10','2Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential)
+                plot_timing_scatter2('timing10','2Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+                plot_timing_scatter2('timing10','2Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)   
+            if (N ==50/dt):
+                plot_timing_scatter2('timing50','2Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential)
+                plot_timing_scatter2('timing50','2Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+                plot_timing_scatter2('timing50','2Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                                
+            if (N ==100/dt):
+                if(num_beacons == 30):
+                    plot_timing_scatter('30mtiming100','2Total_elapsed_box30m','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
+                    plot_timing_scatter('30mtiming100','2Pred_elapsed_box30m','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+                    plot_timing_scatter('30mtiming100','2Est_elapsed_box30m','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
+                
 
-            plot_timing_scatter2('timing100','2Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential)
-            plot_timing_scatter2('timing100','2Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
-            plot_timing_scatter2('timing100','2Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
-        if (N ==600/dt):
-            plot_timing_scatter2('timing600','2Total_elapsed_box','total',num_beacons,elapsed_batch,elapsed_sequential)
-            plot_timing_scatter2('timing600','2Pred_elapsed_box','time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
-            plot_timing_scatter2('timing600','2Est_elapsed_box','meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
-        if (N ==1000/dt):
-            if(num_beacons == 30):
-                plot_timing_scatter('30mtiming1000','2Total_elapsed_box30m','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
-                plot_timing_scatter('30mtiming1000','2Pred_elapsed_box30m','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-                plot_timing_scatter('30mtiming1000','2Est_elapsed_box30m','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
-            
+                plot_timing_scatter2('timing100','2Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential)
+                plot_timing_scatter2('timing100','2Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+                plot_timing_scatter2('timing100','2Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
+            if (N ==600/dt):
+                plot_timing_scatter2('timing600','2Total_elapsed_box','total',num_beacons,elapsed_batch,elapsed_sequential)
+                plot_timing_scatter2('timing600','2Pred_elapsed_box','time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+                plot_timing_scatter2('timing600','2Est_elapsed_box','meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
+            if (N ==1000/dt):
+                if(num_beacons == 30):
+                    plot_timing_scatter('30mtiming1000','2Total_elapsed_box30m','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
+                    plot_timing_scatter('30mtiming1000','2Pred_elapsed_box30m','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
+                    plot_timing_scatter('30mtiming1000','2Est_elapsed_box30m','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
+                
 
-            plot_timing_scatter2('timing1000','2Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential)
-            plot_timing_scatter2('timing1000','2Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
-            plot_timing_scatter2('timing1000','2Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
-            
+                plot_timing_scatter2('timing1000','2Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential)
+                plot_timing_scatter2('timing1000','2Pred_elapsed_box','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+                plot_timing_scatter2('timing1000','2Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
+                
 
 
 
