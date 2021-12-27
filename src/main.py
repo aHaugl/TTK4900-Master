@@ -86,6 +86,8 @@ else:
 # z_GNSS = loaded_data["z_GNSS"].T
     
 beacon_location = loaded_data["beacon_location"]
+temp = beacon_location[:15]
+beacon_location = temp 
 
 tGNSS = loaded_data["timeGNSS"].T
 z_GNSS = loaded_data["z_GNSS"].T
@@ -199,7 +201,7 @@ eskf_parameters = [acc_std,
 """
 Running the simulation
 """
-beacon_location: np.ndarray = loaded_data["beacon_location"]
+# beacon_location: np.ndarray = loaded_data["beacon_location"]
 
 use_batch_pseudoranges: bool = True
 # use_batch_pseudoranges: bool = False
@@ -208,15 +210,15 @@ use_sequential_pseudoranges: bool = True
 use_UDU: bool = True
 # use_UDU: bool = False
 
-do_plot: bool = False
+do_plot: bool = True
 
 num_beacons = len(beacon_location)
-num_sims = 1
+num_sims = 200
 
 # %% Run estimation for
 #Number of seconds of simulation to run. len(timeIMU) decides max
 # N_list: int = [int(len(timeIMU))]
-N_list: int = [int(1000/dt)]
+N_list: int = [int(100/dt)]
 # N: int = int(10/dt) 
 # N: int = int(50/dt)
 # N: int = int(600/dt) 
@@ -415,7 +417,7 @@ for i in range(len(N_list)):
     print("Average runtime for estimation module: ", average_elapsed_est_timer_batch, ", where average occupies =", np.round(average_elapsed_est_timer_batch/average_time_batch*100,3), "% " "relative to total time")
 
     with open('../runtimes.txt', 'a') as frt:
-            frt.write("\n --------------------------------------------------------- \n")
+            frt.write("\n -------------------Run to recreate 30m figures ------------------------ \n")
             frt.writelines("\nNumber of beacons used: " + str(num_beacons) + ", Number of simulations ran through: " + str(num_sims) +", Simulation duration (seconds): " + str(N*dt) + "\n")
             frt.writelines("\nEllapsed time for batch:" + str(np.round(elapsed_batch,3)))
             frt.writelines("\nSummed runtime used in prediction module: " + str(np.round(total_elapsed_pred_timer_batch,3)) + "seconds")
@@ -426,8 +428,8 @@ for i in range(len(N_list)):
             frt.writelines("\nAverage time for batch elapsed: " +  str(average_time_batch) + "seconds")
             frt.writelines("\nAverage runtime for prediction module: " + str(average_elapsed_pred_timer_batch) + ", where average occupies =" + str(np.round(average_elapsed_pred_timer_batch/average_time_batch*100,3)) + "% " "relative to total time")
             frt.writelines("\nAverage runtime for estimation module: " + str(average_elapsed_est_timer_batch) + ", where average occupies =" + str(np.round(average_elapsed_est_timer_batch/average_time_batch*100,3)) + "% " "relative to total time")
-            frt.writelines("\nFinal batch covariance matrix = : " + str(P_est[-1]))
-            frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
+            # frt.writelines("\nFinal batch covariance matrix = : " + str(P_est[-1]))
+            # frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
     frt.close()
     
     #if (use_sequential_pseudoranges):
@@ -555,8 +557,8 @@ for i in range(len(N_list)):
         frt.writelines("\nAverage time for sequential elapsed: " +  str(average_time_sequential) + "seconds")
         frt.writelines("\nAverage runtime for prediction module: " + str(average_elapsed_pred_timer_sequential) + ", where average occupies =" + str(np.round(average_elapsed_pred_timer_sequential/average_time_sequential*100,3)) + "% " "relative to total time")
         frt.writelines("\nAverage runtime for estimation module: " + str(average_elapsed_est_timer_sequential) + ", where average occupies =" + str(np.round(average_elapsed_est_timer_sequential/average_time_sequential*100,3)) + "% " "relative to total time")
-        frt.writelines("\nFinal seq covariance matrix = : " + str(P_est[-1]))
-        frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
+        # frt.writelines("\nFinal seq covariance matrix = : " + str(P_est[-1]))
+        # frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
     frt.close()
     
     #if (use_UDU):
@@ -677,8 +679,8 @@ for i in range(len(N_list)):
         frt.writelines("\nAverage time for UDU elapsed: " +  str(average_time_UDU) + "seconds")
         frt.writelines("\nAverage runtime for prediction module: " + str(average_elapsed_pred_timer_UDU) + ", where average occupies =" + str(np.round(average_elapsed_pred_timer_UDU/average_time_UDU*100,3)) + "% " "relative to total time")
         frt.writelines("\nAverage runtime for estimation module: " + str(average_elapsed_est_timer_UDU) + ", where average occupies =" + str(np.round(average_elapsed_est_timer_UDU/average_time_UDU*100,3)) + "% " "relative to total time")
-        frt.writelines("\nFinal UDU covariance matrix = : " + str(P_est[-1]))
-        frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
+        # frt.writelines("\nFinal UDU covariance matrix = : " + str(P_est[-1]))
+        # frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
    
     frt.close()
     
@@ -768,9 +770,9 @@ for i in range(len(N_list)):
                 plot_timing_scatter2('timing50','2Est_elapsed_box','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                                
             if (N ==100/dt):
                 if(num_beacons == 30):
-                    plot_timing_scatter('30mtiming100','2Total_elapsed_box30m','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
-                    plot_timing_scatter('30mtiming100','2Pred_elapsed_box30m','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-                    plot_timing_scatter('30mtiming100','2Est_elapsed_box30m','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
+                    plot_timing_scatter2('30mtiming100','2Total_elapsed_box30m','Total run time',num_beacons,elapsed_batch,elapsed_sequential)
+                    plot_timing_scatter2('30mtiming100','2Pred_elapsed_box30m','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+                    plot_timing_scatter2('30mtiming100','2Est_elapsed_box30m','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
                 
 
                 plot_timing_scatter2('timing100','2Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential)
@@ -782,9 +784,9 @@ for i in range(len(N_list)):
                 plot_timing_scatter2('timing600','2Est_elapsed_box','meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
             if (N ==1000/dt):
                 if(num_beacons == 30):
-                    plot_timing_scatter('30mtiming1000','2Total_elapsed_box30m','Total run time',num_beacons,elapsed_batch,elapsed_sequential,elapsed_UDU)
-                    plot_timing_scatter('30mtiming1000','2Pred_elapsed_box30m','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential,total_elapsed_pred_timer_UDU)
-                    plot_timing_scatter('30mtiming1000','2Est_elapsed_box30m','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential,total_elapsed_est_timer_UDU)                
+                    plot_timing_scatter2('30mtiming1000','2Total_elapsed_box30m','Total run time',num_beacons,elapsed_batch,elapsed_sequential)
+                    plot_timing_scatter2('30mtiming1000','2Pred_elapsed_box30m','Time upd module',num_beacons,total_elapsed_pred_timer_batch,total_elapsed_pred_timer_sequential)
+                    plot_timing_scatter2('30mtiming1000','2Est_elapsed_box30m','Meas upd module',num_beacons,total_elapsed_est_timer_batch,total_elapsed_est_timer_sequential)                
                 
 
                 plot_timing_scatter2('timing1000','2Total_elapsed_box','Total run time',num_beacons,elapsed_batch,elapsed_sequential)

@@ -336,7 +336,7 @@ def plot_timing_scatter(location, figname, plot_title, m, batch_time = None, seq
             
     plt.ylabel('Elapsed run time [s]')
     plt.grid()
-    plt.title(f"{plot_title}"', n = 'f"{n}"', m = 'f"{n}")
+    plt.title(f"{plot_title}"', n = 'f"{n}"', m = 'f"{m}")
     plt.legend(['Batch average: 'f"{avg_data[0]}"' [s]', 'Seq average: 'f"{avg_data[1]}"' [s]', 'UDU average: 'f"{avg_data[2]}"' [s]'],loc='best', fancybox=True, shadow=True)
     fig.tight_layout()
     plt.savefig('../plots/'f"{location}"'/'f"{figname}"'.eps')
@@ -374,7 +374,7 @@ def plot_timing_scatter2(location, figname, plot_title, m, batch_time = None, se
     plt.ylabel('Elapsed run time [s]')
     plt.grid()
        
-    plt.title(f"{plot_title}"', n = 'f"{n}"', m = 'f"{n}")
+    plt.title(f"{plot_title}"', n = 'f"{n}"', m = 'f"{m}")
     plt.legend(['Batch average: 'f"{avg_data[0]}"' [s]', 'Seq average: 'f"{avg_data[1]}"' [s]'],loc='best', fancybox=True, shadow=True)
     fig.tight_layout()
     plt.savefig('../plots/'f"{location}"'/'f"{figname}"'.eps')
