@@ -218,7 +218,7 @@ num_sims = 200
 # %% Run estimation for
 #Number of seconds of simulation to run. len(timeIMU) decides max
 # N_list: int = [int(len(timeIMU))]
-N_list: int = [int(100/dt)]
+N_list: int = [int(1000/dt)]
 # N: int = int(10/dt) 
 # N: int = int(50/dt)
 # N: int = int(600/dt) 
