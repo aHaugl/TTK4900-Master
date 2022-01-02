@@ -86,8 +86,8 @@ else:
 # z_GNSS = loaded_data["z_GNSS"].T
     
 beacon_location = loaded_data["beacon_location"]
-temp = beacon_location[:15]
-beacon_location = temp 
+# temp = beacon_location[:15]
+# beacon_location = temp 
 
 tGNSS = loaded_data["timeGNSS"].T
 z_GNSS = loaded_data["z_GNSS"].T
@@ -424,7 +424,7 @@ for i in range(len(N_list)):
     print("Average runtime for estimation module: ", average_elapsed_est_timer_batch, ", where average occupies =", np.round(average_elapsed_est_timer_batch/average_time_batch*100,3), "% " "relative to total time")
 
     with open('../runtimes.txt', 'a') as frt:
-            frt.write("\n -------------------Run to get cov for 15m ------------------------ \n")
+            frt.write("\n -------------------Run to get new legend on path 30m  ------------------------ \n")
             frt.writelines("\nNumber of beacons used: " + str(num_beacons) + ", Number of simulations ran through: " + str(num_sims) +", Simulation duration (seconds): " + str(N*dt) + "\n")
             frt.writelines("\nEllapsed time for batch:" + str(np.round(elapsed_batch,3)))
             frt.writelines("\nSummed runtime used in prediction module: " + str(np.round(total_elapsed_pred_timer_batch,3)) + "seconds")
