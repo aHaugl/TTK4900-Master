@@ -210,10 +210,12 @@ use_sequential_pseudoranges: bool = True
 use_UDU: bool = True
 # use_UDU: bool = False
 
-do_plot: bool = True
+do_plot: bool = False
+
+do_plot1: bool = True
 
 num_beacons = len(beacon_location)
-num_sims = 200
+num_sims = 1
 
 # %% Run estimation for
 #Number of seconds of simulation to run. len(timeIMU) decides max
@@ -238,6 +240,11 @@ for i in range(len(N_list)):
         print("No")
     elif (do_plot):
         print("Yes")
+        
+    if (do_plot1 == 0):
+        print("Doplot1 no")
+    elif (do_plot1):
+        print("Doplot1 Yes")
     offset = 0
     doGNSS: bool = True
     # rtol = 1e-05
@@ -312,7 +319,7 @@ for i in range(len(N_list)):
 
     
     #Plot the latest run and save figures
-    if(do_plot):
+    if(do_plot1):
         print("Plotting batch figures")
         if (N == 10/dt):
             
@@ -417,7 +424,7 @@ for i in range(len(N_list)):
     print("Average runtime for estimation module: ", average_elapsed_est_timer_batch, ", where average occupies =", np.round(average_elapsed_est_timer_batch/average_time_batch*100,3), "% " "relative to total time")
 
     with open('../runtimes.txt', 'a') as frt:
-            frt.write("\n -------------------Run to recreate 30m figures ------------------------ \n")
+            frt.write("\n -------------------Run to get cov for 15m ------------------------ \n")
             frt.writelines("\nNumber of beacons used: " + str(num_beacons) + ", Number of simulations ran through: " + str(num_sims) +", Simulation duration (seconds): " + str(N*dt) + "\n")
             frt.writelines("\nEllapsed time for batch:" + str(np.round(elapsed_batch,3)))
             frt.writelines("\nSummed runtime used in prediction module: " + str(np.round(total_elapsed_pred_timer_batch,3)) + "seconds")
@@ -428,8 +435,8 @@ for i in range(len(N_list)):
             frt.writelines("\nAverage time for batch elapsed: " +  str(average_time_batch) + "seconds")
             frt.writelines("\nAverage runtime for prediction module: " + str(average_elapsed_pred_timer_batch) + ", where average occupies =" + str(np.round(average_elapsed_pred_timer_batch/average_time_batch*100,3)) + "% " "relative to total time")
             frt.writelines("\nAverage runtime for estimation module: " + str(average_elapsed_est_timer_batch) + ", where average occupies =" + str(np.round(average_elapsed_est_timer_batch/average_time_batch*100,3)) + "% " "relative to total time")
-            # frt.writelines("\nFinal batch covariance matrix = : " + str(P_est[-1]))
-            # frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
+            frt.writelines("\nFinal batch covariance matrix = : " + str(P_est[-1]))
+            frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
     frt.close()
     
     #if (use_sequential_pseudoranges):
@@ -460,7 +467,7 @@ for i in range(len(N_list)):
         #Summed up time used in estimation steps
         total_elapsed_est_timer_sequential[i] = np.sum(elapsed_est_timer_sequential)
 
-    if(do_plot):
+    if(do_plot1):
         print("Plotting batch figures")
     #Plot the latest run and save figures
         if (N == 10/dt):
@@ -557,8 +564,8 @@ for i in range(len(N_list)):
         frt.writelines("\nAverage time for sequential elapsed: " +  str(average_time_sequential) + "seconds")
         frt.writelines("\nAverage runtime for prediction module: " + str(average_elapsed_pred_timer_sequential) + ", where average occupies =" + str(np.round(average_elapsed_pred_timer_sequential/average_time_sequential*100,3)) + "% " "relative to total time")
         frt.writelines("\nAverage runtime for estimation module: " + str(average_elapsed_est_timer_sequential) + ", where average occupies =" + str(np.round(average_elapsed_est_timer_sequential/average_time_sequential*100,3)) + "% " "relative to total time")
-        # frt.writelines("\nFinal seq covariance matrix = : " + str(P_est[-1]))
-        # frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
+        frt.writelines("\nFinal seq covariance matrix = : " + str(P_est[-1]))
+        frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
     frt.close()
     
     #if (use_UDU):
@@ -590,7 +597,7 @@ for i in range(len(N_list)):
         total_elapsed_pred_timer_UDU[i] = np.sum(elapsed_pred_timer_UDU)
         #Summed up time used in estimation steps
         total_elapsed_est_timer_UDU[i] = np.sum(elapsed_est_timer_UDU)
-    if(do_plot):
+    if(do_plot1):
         print("Plotting batch figures")
         #Plot the latest run and save figures
         if (N == 10/dt):
@@ -679,8 +686,8 @@ for i in range(len(N_list)):
         frt.writelines("\nAverage time for UDU elapsed: " +  str(average_time_UDU) + "seconds")
         frt.writelines("\nAverage runtime for prediction module: " + str(average_elapsed_pred_timer_UDU) + ", where average occupies =" + str(np.round(average_elapsed_pred_timer_UDU/average_time_UDU*100,3)) + "% " "relative to total time")
         frt.writelines("\nAverage runtime for estimation module: " + str(average_elapsed_est_timer_UDU) + ", where average occupies =" + str(np.round(average_elapsed_est_timer_UDU/average_time_UDU*100,3)) + "% " "relative to total time")
-        # frt.writelines("\nFinal UDU covariance matrix = : " + str(P_est[-1]))
-        # frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
+        frt.writelines("\nFinal UDU covariance matrix = : " + str(P_est[-1]))
+        frt.writelines("\nDiagonal elements are: " + str(np.diag(P_est[-1])))
    
     frt.close()
     

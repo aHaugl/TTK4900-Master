@@ -267,7 +267,7 @@ def plot_3Dpath(t, N, beacon_location, GNSSk, z_GNSS,  x_est, filterversion, fig
     ax.set_ylabel("North [m]")
     ax.set_zlabel("Altitude [m]")
     
-    ax.legend(["Estimated NED pos", "True NED pos", "z_GNSS", "Beacon location"], loc='best')
+    ax.legend(["Estimated NED pos", "True NED pos", "z", "Beacon location"], loc='best')
     fig.suptitle("Estimated vs true 3d path")
     fig.tight_layout()
     
@@ -296,7 +296,7 @@ def plot_path(t,N, beacon_location, GNSSk, z_GNSS, x_est, filterversion, figname
     ax8.set(ylabel="NED position [m]")
     ax8.set_xlabel("East [m]")
     ax8.set_ylabel("North [m]")
-    ax8.legend(["Estimated NED pos", "True NED pos", "z_GNSS", "Beacon location"])
+    ax8.legend(["Estimated NED pos", "True NED pos", "z", "Beacon location"])
     
     fig8.suptitle("Estimated vs true path")
     fig8.tight_layout()
